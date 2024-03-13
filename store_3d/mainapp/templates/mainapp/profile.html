@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block content %}
+<section id="user-profile" class="section-bg">
+  <div class="container">
+    <div class="section-title">
+      <h2>Профиль пользователя</h2>
+    </div>
+
+    {% if messages %}
+      <div class="alert alert-success">
+        {% for message in messages %}
+          {{ message }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <h3>Редактировать профиль</h3>
+        <form action="{% url 'edit_profile' %}" method="post" role="form">
+          {% csrf_token %}
+          {{ form.as_p }}
+
+          <button type="submit" class="btn btn-primary">Обновить данные</button>
+        </form>
+      </div>
+
+      <div class="col-md-6">
+        <h3>Удалить профиль</h3>
+        <p>Вы уверены, что хотите удалить свой профиль? Это действие нельзя отменить.</p>
+        <form action="{% url 'delete_profile' %}" method="post" role="form" onsubmit="return confirm('Вы уверены, что хотите удалить свой профиль? Все данные будут удалены.');">
+          {% csrf_token %}
+
+          <button type="submit" class="btn btn-danger">Удалить профиль</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

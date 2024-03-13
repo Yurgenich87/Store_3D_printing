@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -70,6 +71,9 @@ TEMPLATES = [
     },
 ]
 
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+
 WSGI_APPLICATION = 'store_3d.wsgi.application'
 
 # Database
@@ -82,8 +86,13 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'mainapp.User'
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -128,7 +137,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process} {thread}{message}',
+            'format': '{levelname} {asctime} {module} {process} {thread} {message}',
             'style': '{',
         },
         'simple': {
@@ -139,11 +148,13 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
+            'stream': sys.stdout,
         },
         'file': {
             'class': 'logging.FileHandler',
             'filename': './logs/django.log',
             'formatter': 'verbose',
+            'encoding': 'utf-8',
         },
     },
     'loggers': {
@@ -152,7 +163,7 @@ LOGGING = {
             'level': 'INFO',
         },
 
-        'myapp': {
+        'mainapp': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -160,13 +171,14 @@ LOGGING = {
     },
 }
 
-common_content = {
+COMMON_CONTENT = {
     'name_store': '3D Master',
     'main': 'Главная',
     'about': 'О нас',
     'services': 'Сервисы',
     'contact': 'Контакты',
     'phone': '+7 999 678 43 20',
-    'email': 'yurakarbushev@gmail.com',
-    'address': 'г. Москва, ул. Ленинградский, 8'
+    'email_store': 'yurakarbushev@gmail.com',
+    'address': 'ул. Кирова, 40',
+    'city': 'Новокузнецк',
 }

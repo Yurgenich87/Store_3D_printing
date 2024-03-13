@@ -3167,6 +3167,20 @@ textarea.form-control-lg {
   --bs-btn-disabled-border-color: #f8f9fa;
 }
 
+.btn-blue-3d[type=submit]{
+  --bs-btn-background: #1977cc;
+  --bs-btn-border: 0;
+  --bs-btn-padding: 10px 35px;
+  --bs-btn-color: #fff;
+  --bs-btn-transition: 0.4s;
+  --bs-btn-border-radius: 50px;
+}
+
+.btn-blue-3d[type=submit]:hover {
+  --bs-btn-background: #1c84e3;
+}
+
+
 .btn-dark {
   --bs-btn-color: #fff;
   --bs-btn-bg: #212529;

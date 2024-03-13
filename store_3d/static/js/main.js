@@ -20,6 +20,27 @@
     }
   }
 
+  var currentUrl = window.location.pathname;
+
+            // Check if we are on the home page
+            if (currentUrl === '/') {
+                // Hide the back button if we are on the home page
+                document.getElementById('back-button').style.display = 'none';
+            } else {
+                // Show the back button if we are not on the home page
+                document.getElementById('back-button').style.display = 'block';
+            }
+
+  function showInfoMessage(message, duration) {
+    var infoMessage = document.getElementById('info-message');
+    infoMessage.textContent = message;
+    infoMessage.style.display = 'block';
+
+    setTimeout(function() {
+        infoMessage.style.display = 'none';
+    }, duration);
+  }
+
   /**
    * Easy event listener function
    */
@@ -35,7 +56,7 @@
   }
 
   /**
-   * Easy on scroll event listener 
+   * Easy on scroll event listener
    */
   const onscroll = (el, listener) => {
     el.addEventListener('scroll', listener)
@@ -173,14 +194,14 @@
   }
 
   /**
-   * Initiate glightbox 
+   * Initiate glightbox
    */
   const glightbox = GLightbox({
     selector: '.glightbox'
   });
 
   /**
-   * Initiate Gallery Lightbox 
+   * Initiate Gallery Lightbox
    */
   const galelryLightbox = GLightbox({
     selector: '.galelry-lightbox'
@@ -216,7 +237,7 @@
   });
 
   /**
-   * Initiate Pure Counter 
+   * Initiate Pure Counter
    */
   new PureCounter();
 
