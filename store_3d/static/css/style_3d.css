@@ -1632,22 +1632,20 @@ section {
 # Footer
 --------------------------------------------------------------*/
 #footer_3d {
-  position: static;
   bottom: 0;
   left: 0;
   width: 100%;
   padding: 20px 0;
-  background-color: rgba(85, 172, 230, 0.53);
+  background-image: url('/static/img/footer-bg.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
   font-size: 14px;
-  min-height: 100vh;
 }
-
 #footer_3d .footer_3d-top {
   padding: 60px 0 30px 0;
   box-shadow: 0px 2px 15px rgba(25, 119, 204, 0.1);
   width: 100%;
   bottom: 0px;
-  background-color: rgba(85, 172, 230, 0.53)
 }
 
 #footer_3d .footer_3d-top .footer_3d-contact {

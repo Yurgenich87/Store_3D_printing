@@ -72,7 +72,8 @@
         <ul>
           <li><a class="nav-link scrollto" href="/about">О нас</a></li>
           <li><a class="nav-link scrollto" href="/gallery">Галерея</a></li>
-          <li><a class="nav-link scrollto" href="#services">Сервисы</a></li>
+          <li><a class="nav-link scrollto" href="/products">Продукция</a></li>
+          <li><a class="nav-link scrollto" href="/orders">Ордера</a></li>
           <li><a class="nav-link scrollto" href="/contact">Контакты</a></li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>
@@ -101,56 +102,55 @@
       {% block content %}{% endblock %}
   </div>
   <!-- ======= Footer ======= -->
-        <div class="footer_3d">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6 footer_3d-contact">
-                        <p>
-                            {{ city }} <br>
-                            <strong>Телефон:</strong> {{ phone }}<br>
-                            <strong>Email:</strong> {{ email_store }}<br>
-                        </p>
-                    </div>
+<footer id="footer_3d" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 footer_3d-contact">
+                <p>
+                    {{ city }} <br>
+                    <strong>Телефон:</strong> {{ phone }}<br>
+                    <strong>Email:</strong> {{ email_store }}<br>
+                </p>
+            </div>
 
-                    <div class="col-lg-3 col-md-6 footer_3d-links">
-                        <h5>Наши услуги</h5>
-                        <ul>
-                            <li><i class="bx bx-chevron-right"></i> <a href="#">3d печать различным пластиком</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="#">Моделирование по чертежам</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="#">Мелкосерийное производство</a></li>
-                        </ul>
-                    </div>
+            <div class="col-lg-3 col-md-6 footer_3d-links">
+                <h5>Наши услуги</h5>
+                <ul>
+                    <li><i class="bx bx-chevron-right"></i> <a href="#">3d печать различным пластиком</a></li>
+                    <li><i class="bx bx-chevron-right"></i> <a href="#">Моделирование по чертежам</a></li>
+                    <li><i class="bx bx-chevron-right"></i> <a href="#">Мелкосерийное производство</a></li>
+                </ul>
+            </div>
 
-                    <div class="col-lg-4 col-md-6 footer_3d-newsletter">
-                        <h4>Подписка</h4>
-                        <p>Чтобы подписаться на нашу рассылку, введите ваш email</p>
+            <div class="col-lg-4 col-md-6 footer_3d-newsletter">
+                <h4>Подписка</h4>
+                <p>Чтобы подписаться на нашу рассылку, введите ваш email</p>
 
-                        <form action="" method="post" role="form" class="php-email-form">
-                                <input type="email" name="email"><input type="submit" value="Подписаться">
-                        </form>
-                    </div>
-                </div>
+                <form action="" method="post" role="form" class="php-email-form">
+                    <input type="email" name="email"><input type="submit" value="Подписаться">
+                </form>
             </div>
         </div>
+    </div>
 
-        <div class="container d-md-flex py-4">
-            <div class="me-md-auto text-center text-md-start">
-                <div class="copyright">
-                    &copy; Авторские права  <strong><span>{{ name_store }}</span></strong>. Все права защищены.
-                </div>
-                <div class="credits">
-                </div>
+    <div class="container d-md-flex py-4">
+        <div class="me-md-auto text-center text-md-start">
+            <div class="copyright">
+                &copy; Авторские права  <strong><span>{{ name_store }}</span></strong>. Все права защищены.
             </div>
-            <div class="social-links text-center text-md-right pt-3 pt-md-0">
-                <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
-                <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
-                <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
-                <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
-                <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+            <div class="credits">
             </div>
         </div>
+        <div class="social-links text-center text-md-right pt-3 pt-md-0">
+            <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
+            <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
+            <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
+            <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
+            <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+        </div>
+    </div>
     <i class="bi bi-arrow-up-short"></i>
-
+</footer>
   <!-- Vendor JS Files -->
   <script src="{% static 'vendor/purecounter/purecounter_vanilla.js' %}"></script>
   <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>

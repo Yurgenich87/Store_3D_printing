@@ -21,6 +21,7 @@ class UserProfileForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'placeholder': 'Ваш адрес'}),
         }
 
+
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
@@ -41,13 +42,35 @@ class UserForm(forms.ModelForm):
         }
 
 
-class ProductForm(forms.Form):
+class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['name', 'description', 'price', 'quantity']
+        labels = {
+            'name': '',
+            'description': '',
+            'price': '',
+            'quantity': '',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Товар'}),
+            'description': forms.TextInput(attrs={'placeholder': 'Описание'}),
+            'price': forms.NumberInput(attrs={'placeholder': 'Цена'}),
+            'quantity': forms.NumberInput(attrs={'placeholder': 'Кол-во'}),
+        }
 
 
-class OrderForm(forms.Form):
+class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ['user', 'product', 'price_sum']
+        labels = {
+            'user': '',
+            'product': '',
+            'price_sum': '',
+        }
+        widgets = {
+            'user': forms.TextInput(attrs={'placeholder': 'Пользователь'}),
+            'product': forms.TextInput(attrs={'placeholder': 'Товар'}),
+            'price_sum': forms.NumberInput(attrs={'placeholder': 'Сумма'}),
+        }

@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import index, about, contact, register, gallery, user_update, user_delete, login_view, user_list, \
-    logout_view, profile, edit_profile, delete_profile
+from .views import index, about, contact, register, gallery, login_view, \
+    logout_view, profile, edit_profile, delete_profile, manage_products, manage_orders
 
 urlpatterns = [
     path('', index, name='index'),
@@ -13,4 +13,9 @@ urlpatterns = [
     path('gallery/', gallery, name='gallery'),
     path('profile/', profile, name='profile'),
     path('edit_profile/', edit_profile, name='edit_profile'),
-    path('delete_profile/', delete_profile, name='delete_profile'),]
+    path('delete_profile/', delete_profile, name='delete_profile'),
+    path('products/', manage_products, name='manage_products'),
+    path('orders/', manage_orders, name='manage_orders'),
+
+]
+

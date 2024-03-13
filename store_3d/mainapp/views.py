@@ -6,8 +6,9 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import User
-from .forms import UserForm, LoginForm, UserProfileForm
+
+from .models import User, Order, Product
+from .forms import UserForm, LoginForm, UserProfileForm, ProductForm, OrderForm
 
 logger = logging.getLogger(__name__)
 
@@ -197,43 +198,72 @@ def about(request):
     return render(request, 'mainapp/about.html', content)
 
 
-# ____________________________________________________________Users_____________________________________________________
-def user_list(request):
-    users = User.objects.all()  # Получение всех пользователей
-    context = {
-        'users': users,
-        'title': 'Список пользователей',  # Заголовок страницы
-        **COMMON_CONTENT
-    }
-    return render(request, 'mainapp/user_list.html', context)
-
-
-def user_update(request, pk):
-    user = get_object_or_404(User, pk=pk)
+# ________________________________________________________Product_____________________________________________________
+def manage_products(request):
     if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
-        if form.is_valid():
-            user = form.save()
-            messages.success(request, 'Пользователь успешно обновлен')
-            return redirect('user_detail', pk=user.pk)
-    else:
-        form = UserForm(instance=user)
+        if 'create_product' in request.POST:
+            form = ProductForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('manage_products')
 
+        if 'update_product' in request.POST:
+            product_id = request.POST.get('product_id')
+            product = get_object_or_404(Product, pk=product_id)
+            form = ProductForm(request.POST, instance=product)
+            if form.is_valid():
+                form.save()
+                return redirect('manage_products')
+
+        if 'delete_product' in request.POST:
+            product_id = request.POST.get('product_id')
+            product = get_object_or_404(Product, pk=product_id)
+            product.delete()
+            return redirect('manage_products')
+
+    else:
+        form = ProductForm()
+
+    products = Product.objects.all()
     context = {
         'form': form,
-        'title': 'Редактирование пользователя',
+        'title': 'Мои товары',
+        'products': products,
         **COMMON_CONTENT
     }
-
-    return render(request, 'mainapp/user_update.html', context)
-
-
-def user_delete(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    user.delete()
-    return redirect('user_list')
+    return render(request, 'mainapp/manage_products.html', context)
 
 
-def user_detail(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    return render(request, 'mainapp/profile.html', {'user': user})
+def manage_orders(request):
+    if request.method == 'POST':
+        if 'create_order' in request.POST:
+            form = OrderForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('manage_orders')
+
+        if 'update_order' in request.POST:
+            order_id = request.POST.get('order_id')
+            order = get_object_or_404(Order, pk=order_id)
+            form = OrderForm(request.POST, instance=order)
+            if form.is_valid():
+                form.save()
+                return redirect('manage_orders')
+
+        if 'delete_order' in request.POST:
+            order_id = request.POST.get('order_id')
+            order = get_object_or_404(Order, pk=order_id)
+            order.delete()
+            return redirect('manage_orders')
+
+    else:
+        form = OrderForm()
+
+    orders = Order.objects.all()
+    context = {
+        'form': form,
+        'title': 'Мои заказы',
+        'orders': orders,
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/manage_orders.html', context)
