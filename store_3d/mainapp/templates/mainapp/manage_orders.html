@@ -1,28 +1,59 @@
 {% extends 'base.html' %}
 
-{% block title %}Управление заказами{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+
 <section id="order-management" class="section-bg">
+  <div class="row justify-content-center">
+  <div class="col-md-6 text-center">
+
   <div class="container">
     <div class="section-title">
-      <h2>Управление заказами</h2>
+      <h2>{{ title }}</h2>
     </div>
 
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <a href="{% url 'create_order' %}" class="btn btn-success btn-block mb-3">Создать новый заказ</a>
-        <a href="{% url 'order_list' %}" class="btn btn-primary btn-block mb-3">Просмотреть список заказов</a>
-      </div>
+    <!-- Форма для создания нового заказа -->
+    <form method="post">
+      {% csrf_token %}
+      <select name="user">
+        {% for user in users %}
+          <option value="{{ user.id }}">{{ user.username }}</option>
+        {% endfor %}
+      </select>
+      <select name="product">
+        {% for product in products %}
+          <option value="{{ product.id }}">{{ product.name }}</option>
+        {% endfor %}
+      </select>
 
-      <div class="col-md-6">
-        <a href="{% url 'update_order' pk=1 %}" class="btn btn-info btn-block mb-3">Редактировать заказ</a>
-        <form action="{% url 'delete_order' pk=1 %}" method="post">
+      <button type="submit" name="create_order" class="btn btn-block mb-3">Создать новый заказ</button>
+    </form>
+
+    <!-- Список заказов и кнопки для их редактирования и удаления -->
+    <ul>
+      {% for order in orders %}
+      <li>
+        <p>Заказ №{{ order.id }}</p>
+        <!-- Форма для обновления заказа -->
+        <form method="post">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger btn-block mb-3">Удалить заказ</button>
+          <input type="hidden" name="order_id" value="{{ order.id }}">
+          {{ form.as_p }}
+          <button type="submit" name="update_order" class="btn btn-primary">Обновить</button>
         </form>
-      </div>
-    </div>
+        <!-- Форма для удаления заказа -->
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="order_id" value="{{ order.id }}">
+          <button type="submit" name="delete_order" class="btn btn-danger">Удалить</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
   </div>
+      </div>
+      </div>
+
 </section>
 {% endblock %}

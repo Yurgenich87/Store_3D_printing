@@ -204,6 +204,7 @@ def manage_products(request):
         if 'create_product' in request.POST:
             form = ProductForm(request.POST)
             if form.is_valid():
+                logger.info(f' Валидация формы успешна')
                 form.save()
                 return redirect('manage_products')
 
@@ -212,6 +213,7 @@ def manage_products(request):
             product = get_object_or_404(Product, pk=product_id)
             form = ProductForm(request.POST, instance=product)
             if form.is_valid():
+                logger.info(f' Валидация формы успешна')
                 form.save()
                 return redirect('manage_products')
 
@@ -225,16 +227,17 @@ def manage_products(request):
         form = ProductForm()
 
     products = Product.objects.all()
-    context = {
+    content = {
         'form': form,
         'title': 'Мои товары',
         'products': products,
         **COMMON_CONTENT
     }
-    return render(request, 'mainapp/manage_products.html', context)
+    logger.debug(f"Страница {content['title']} успешно загружена!")
+    return render(request, 'mainapp/manage_products.html', content)
 
 
-def manage_orders(request):
+def manage_orders(request, pk=None):
     if request.method == 'POST':
         if 'create_order' in request.POST:
             form = OrderForm(request.POST)
@@ -259,11 +262,17 @@ def manage_orders(request):
     else:
         form = OrderForm()
 
+    users = User.objects.all()
+    products = Product.objects.all()
     orders = Order.objects.all()
     context = {
         'form': form,
-        'title': 'Мои заказы',
+        'title': 'Управление заказами',
+        'users': users,
+        'products': products,
         'orders': orders,
         **COMMON_CONTENT
     }
     return render(request, 'mainapp/manage_orders.html', context)
+
+
