@@ -33,12 +33,17 @@
                     <p class="card-text">{{ product.description }}</p>
                     <p>Цена: {{ product.price }}</p>
                     <p>Количество: {{ product.quantity }}</p>
-                    <form method="post">
-                      {% csrf_token %}
+                    <form method="post" class="action-form">
+                    {% csrf_token %}
                       <input type="hidden" name="product_id" value="{{ product.pk }}">
+
                       <button type="submit" name="update_product" class="btn btn-info mr-2">Редактировать</button>
+                  </form>
+
+                  <form method="post" class="action-form">
+                    {% csrf_token %}
                       <button type="submit" name="delete_product" class="btn btn-danger">Удалить</button>
-                    </form>
+                  </form>
                   </div>
                 </div>
               </li>
