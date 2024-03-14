@@ -30,7 +30,8 @@ def login_view(request):
                 logger.info(f'Пользователь с email: {email} успешно вошел!')
                 return redirect('index')
             else:
-                logger.error(f"Неудачная попытка входа для пользователя '{email}'. Неверное имя пользователя или пароль.")
+                logger.error(
+                    f"Неудачная попытка входа для пользователя '{email}'. Неверное имя пользователя или пароль.")
                 return redirect('register')
     else:
         form = LoginForm()
@@ -213,9 +214,13 @@ def manage_products(request):
             product = get_object_or_404(Product, pk=product_id)
             form = ProductForm(request.POST, instance=product)
             if form.is_valid():
-                logger.info(f' Валидация формы успешна')
                 form.save()
                 return redirect('manage_products')
+
+        products = Product.objects.all()
+
+        if 'cancel' in request.POST:
+            return redirect('manage_products')
 
         if 'delete_product' in request.POST:
             product_id = request.POST.get('product_id')
@@ -230,11 +235,59 @@ def manage_products(request):
     content = {
         'form': form,
         'title': 'Мои товары',
+        'product': product.name,
         'products': products,
         **COMMON_CONTENT
     }
     logger.debug(f"Страница {content['title']} успешно загружена!")
     return render(request, 'mainapp/manage_products.html', content)
+
+
+def create_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_products')  # Redirect to product list page
+    else:
+        form = ProductForm()
+    context = {
+        'form': form,
+        'title': 'Create Product',
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/create_product.html', context)
+
+
+def update_product(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_products')
+    else:
+        form = ProductForm(instance=product)
+    context = {
+        'form': form,
+        'title': 'Update Product',
+        'product': product,
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/update_product.html', context)
+
+
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    if request.method == 'POST':
+        product.delete()
+        return redirect('manage_products')
+    context = {
+        'product': product,
+        'title': 'Delete Product',
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/manage_products.html', context)
 
 
 def orders(request, pk=None):
@@ -327,5 +380,3 @@ def manage_orders(request):
         **COMMON_CONTENT
     }
     return render(request, 'mainapp/manage_orders.html', context)
-
-

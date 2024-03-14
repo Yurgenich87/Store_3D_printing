@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import index, about, contact, register, gallery, login_view, \
     logout_view, profile, edit_profile, delete_profile, manage_products, update_order, delete_order, \
-    create_order, orders, manage_orders
+    create_order, orders, manage_orders, update_product, delete_product
 
 urlpatterns = [
     path('', index, name='index'),
@@ -16,6 +16,8 @@ urlpatterns = [
     path('edit_profile/', edit_profile, name='edit_profile'),
     path('delete_profile/', delete_profile, name='delete_profile'),
     path('products/', manage_products, name='manage_products'),
+    path('update_product/<int:product_id>/', update_product, name='update_product'),
+    path('delete_product/<int:product_id>/', delete_product, name='delete_product'),
     path('orders/', manage_orders, name='manage_orders'),
     path('orders/create/', create_order, name='create_order'),
     path('update_order/<int:order_id>/', update_order, name='update_order'),
