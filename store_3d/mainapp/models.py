@@ -68,3 +68,7 @@ class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price_sum = models.DecimalField(max_digits=10, decimal_places=2)
     at_data = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.price_sum = self.product.price * self.product.quantity
+        super().save(*args, **kwargs)

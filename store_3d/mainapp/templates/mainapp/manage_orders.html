@@ -6,54 +6,54 @@
 
 <section id="order-management" class="section-bg">
   <div class="row justify-content-center">
-  <div class="col-md-6 text-center">
+    <div class="col-md-6 text-center">
+      <div class="container">
+        <div class="section-title">
+          <h2>{{ title }}</h2>
+        </div>
 
-  <div class="container">
-    <div class="section-title">
-      <h2>{{ title }}</h2>
+        <!-- Форма для создания нового заказа -->
+        <div class="mb-4">
+          <h3>Создать новый заказ</h3>
+          <form action="{% url 'create_order' %}" method="post">
+            {% csrf_token %}
+            {{ order_form.as_p }}
+            <button type="submit" class="btn btn-block btn-primary">Создать заказ</button>
+          </form>
+        </div>
+
+        <!-- Список заказов и кнопки для их редактирования и удаления -->
+        <div class="mb-4">
+          <h3>Список заказов</h3>
+          <ul class="list-unstyled">
+            {% for order in orders %}
+            <li class="mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Заказ №{{ order.id }}</h5>
+                  <p>Клиент: {{ order.user }}</p>
+                  <p>Товар: {{ order.product }}</p>
+                  <p>Сумма: {{ order.price_sum }}</p>
+                  <p>Дата: {{ order.at_data }}</p>
+                  <form action="{% url 'update_order' order.id %}" method="post">
+                    {% csrf_token %}
+                    {{ order_form.as_p }}
+                    <button type="submit" class="btn btn-info">Редактировать</button>
+                  </form>
+                  <form action="{% url 'delete_order' order.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                  </form>
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+      </div>
     </div>
-
-    <!-- Форма для создания нового заказа -->
-    <form method="post">
-      {% csrf_token %}
-      <select name="user">
-        {% for user in users %}
-          <option value="{{ user.id }}">{{ user.username }}</option>
-        {% endfor %}
-      </select>
-      <select name="product">
-        {% for product in products %}
-          <option value="{{ product.id }}">{{ product.name }}</option>
-        {% endfor %}
-      </select>
-
-      <button type="submit" name="create_order" class="btn btn-block mb-3">Создать новый заказ</button>
-    </form>
-
-    <!-- Список заказов и кнопки для их редактирования и удаления -->
-    <ul>
-      {% for order in orders %}
-      <li>
-        <p>Заказ №{{ order.id }}</p>
-        <!-- Форма для обновления заказа -->
-        <form method="post">
-          {% csrf_token %}
-          <input type="hidden" name="order_id" value="{{ order.id }}">
-          {{ form.as_p }}
-          <button type="submit" name="update_order" class="btn btn-primary">Обновить</button>
-        </form>
-        <!-- Форма для удаления заказа -->
-        <form method="post">
-          {% csrf_token %}
-          <input type="hidden" name="order_id" value="{{ order.id }}">
-          <button type="submit" name="delete_order" class="btn btn-danger">Удалить</button>
-        </form>
-      </li>
-      {% endfor %}
-    </ul>
   </div>
-      </div>
-      </div>
-
 </section>
+
 {% endblock %}

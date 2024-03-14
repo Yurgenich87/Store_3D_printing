@@ -63,14 +63,5 @@ class ProductForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['user', 'product', 'price_sum']
-        labels = {
-            'user': '',
-            'product': '',
-            'price_sum': '',
-        }
-        widgets = {
-            'user': forms.TextInput(attrs={'placeholder': 'Пользователь'}),
-            'product': forms.TextInput(attrs={'placeholder': 'Товар'}),
-            'price_sum': forms.NumberInput(attrs={'placeholder': 'Сумма'}),
-        }
+        fields = ['user', 'product']
+

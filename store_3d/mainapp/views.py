@@ -237,40 +237,80 @@ def manage_products(request):
     return render(request, 'mainapp/manage_products.html', content)
 
 
-def manage_orders(request, pk=None):
+def orders(request, pk=None):
+    if pk:
+        # Показать детали конкретного заказа
+        order = get_object_or_404(Order, pk=pk)
+        context = {
+            'order': order,
+            'title': f'Заказ #{order.pk}',
+            **COMMON_CONTENT
+        }
+        template_name = 'mainapp/manage_orders.html'
+    else:
+        # Показать список всех заказов
+        orders = Order.objects.all()
+        context = {
+            'orders': orders,
+            'title': 'Список заказов',
+            **COMMON_CONTENT
+        }
+        template_name = 'mainapp/manage_orders.html'
+
+    return render(request, template_name, context)
+
+
+def create_order(request):
     if request.method == 'POST':
-        if 'create_order' in request.POST:
-            form = OrderForm(request.POST)
-            if form.is_valid():
-                form.save()
-                return redirect('manage_orders')
-
-        if 'update_order' in request.POST:
-            order_id = request.POST.get('order_id')
-            order = get_object_or_404(Order, pk=order_id)
-            form = OrderForm(request.POST, instance=order)
-            if form.is_valid():
-                form.save()
-                return redirect('manage_orders')
-
-        if 'delete_order' in request.POST:
-            order_id = request.POST.get('order_id')
-            order = get_object_or_404(Order, pk=order_id)
-            order.delete()
+        form = OrderForm(request.POST)
+        if form.is_valid():
+            form.save()
             return redirect('manage_orders')
-
     else:
         form = OrderForm()
-
-    users = User.objects.all()
-    products = Product.objects.all()
-    orders = Order.objects.all()
     context = {
         'form': form,
-        'title': 'Управление заказами',
-        'users': users,
-        'products': products,
+        'title': 'Создание заказа',
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/create_order.html', context)
+
+
+def update_order(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    if request.method == 'POST':
+        form = OrderForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_orders')
+    else:
+        form = OrderForm(instance=order)
+    context = {
+        'form': form,
+        'title': 'Редактирование заказа',
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/manage_orders.html', context)
+
+
+def delete_order(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    if request.method == 'POST':
+        order.delete()
+        return redirect('manage_orders')
+    context = {
+        'order': order,
+        'title': 'Удаление заказа',
+        **COMMON_CONTENT
+    }
+    return render(request, 'mainapp/delete_order.html', context)
+
+
+def manage_orders(request):
+    orders = Order.objects.all()
+    context = {
         'orders': orders,
+        'title': 'Мои заказы',
         **COMMON_CONTENT
     }
     return render(request, 'mainapp/manage_orders.html', context)
