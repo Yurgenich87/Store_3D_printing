@@ -63,5 +63,5 @@ class ProductForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['user', 'product']
+        fields = ['user', 'product', 'quantity']
 

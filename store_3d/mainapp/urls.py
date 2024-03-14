@@ -18,7 +18,7 @@ urlpatterns = [
     path('products/', manage_products, name='manage_products'),
     path('orders/', manage_orders, name='manage_orders'),
     path('orders/create/', create_order, name='create_order'),
-    path('update_order/<int:pk>/', update_order, name='update_order'),
-    path('delete_order/<int:pk>/', delete_order, name='delete_order'),
+    path('update_order/<int:order_id>/', update_order, name='update_order'),
+    path('delete_order/<int:order_id>/', delete_order, name='delete_order')
 ]
 

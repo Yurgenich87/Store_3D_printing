@@ -239,7 +239,6 @@ def manage_products(request):
 
 def orders(request, pk=None):
     if pk:
-        # Показать детали конкретного заказа
         order = get_object_or_404(Order, pk=pk)
         context = {
             'order': order,
@@ -248,7 +247,6 @@ def orders(request, pk=None):
         }
         template_name = 'mainapp/manage_orders.html'
     else:
-        # Показать список всех заказов
         orders = Order.objects.all()
         context = {
             'orders': orders,
@@ -264,7 +262,18 @@ def create_order(request):
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.cleaned_data['user']
+            product = form.cleaned_data['product']
+            quantity = form.cleaned_data['quantity']
+
+            price_sum = product.price * quantity
+
+            Order.objects.create(
+                user=user,
+                product=product,
+                quantity=quantity,
+                price_sum=price_sum
+            )
             return redirect('manage_orders')
     else:
         form = OrderForm()
@@ -282,15 +291,19 @@ def update_order(request, order_id):
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
+            order.price_sum = order.product.price * form.cleaned_data['quantity']
+            order.save()
             return redirect('manage_orders')
+
     else:
         form = OrderForm(instance=order)
     context = {
         'form': form,
         'title': 'Редактирование заказа',
+        'order': order,  # Передаем объект заказа в контекст
         **COMMON_CONTENT
     }
-    return render(request, 'mainapp/manage_orders.html', context)
+    return render(request, 'mainapp/update_order.html', context)
 
 
 def delete_order(request, order_id):

@@ -31,16 +31,18 @@
               <div class="card">
                 <div class="card-body">
                   <h5 class="card-title">Заказ №{{ order.id }}</h5>
-                  <p>Клиент: {{ order.user }}</p>
-                  <p>Товар: {{ order.product }}</p>
-                  <p>Сумма: {{ order.price_sum }}</p>
+                  <p>Клиент: {{ order.user.username }}</p>
+                  <p>Наименование товара: {{ order.product.name }}</p>
+                  <p>Количество товара: {{ order.quantity }} шт.</p>
+                  <p>Сумма: {{ order.price_sum }} руб.</p>
                   <p>Дата: {{ order.at_data }}</p>
-                  <form action="{% url 'update_order' order.id %}" method="post">
+                  <form action="{% url 'update_order' order.id %}" method="post" class="action-form">
                     {% csrf_token %}
                     {{ order_form.as_p }}
-                    <button type="submit" class="btn btn-info">Редактировать</button>
+                    <button type="submit">Редактировать</button>
                   </form>
-                  <form action="{% url 'delete_order' order.id %}" method="post">
+
+                  <form action="{% url 'delete_order' order.id %}" method="post" class="action-form">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Удалить</button>
                   </form>
