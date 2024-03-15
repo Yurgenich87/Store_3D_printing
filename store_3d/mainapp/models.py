@@ -1,9 +1,12 @@
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.db import models
-
+from django.utils.html import escape
 
 class UserManager(BaseUserManager):
+    """Manager for user model"""
+
     def create_user(self, email, username, password=None):
+        """Creates a new user"""
         if not email:
             raise ValueError('Users must have an email address')
 
@@ -17,6 +20,7 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username, password):
+        """Creates and saves a new super user"""
         user = self.create_user(
             email=self.normalize_email(email),
             username=username,
@@ -28,6 +32,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
+    """ Class for users in the system"""
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=100)
@@ -56,17 +61,32 @@ class User(AbstractBaseUser):
 
 
 class Product(models.Model):
+    """Product model"""
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=100)
     price = models.IntegerField()
     quantity = models.IntegerField()
     at_data = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
 
 
 class Order(models.Model):
+    """Order model"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price_sum = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
     at_data = models.DateTimeField(auto_now_add=True)
 
+
+class Article(models.Model):
+    """Article model"""
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+    def get_html_content(self):
+        """Return the content as HTML"""
+        return escape(self.content)  # Обработка специальных символов HTML

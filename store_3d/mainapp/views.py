@@ -1,4 +1,5 @@
 import logging
+import os
 
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
@@ -7,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from .models import User, Order, Product
+from .models import User, Order, Product, Article
 from .forms import UserForm, LoginForm, UserProfileForm, ProductForm, OrderForm
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,9 @@ logger = logging.getLogger(__name__)
 COMMON_CONTENT = settings.COMMON_CONTENT
 
 logger = logging.getLogger(__name__)
+
+def sass_page_handler(request):
+    return render(request,'mainapp/sass.html', COMMON_CONTENT)
 
 
 def login_view(request):
@@ -161,13 +165,41 @@ def index(request):
 
 
 def gallery(request):
+    gallery_folder = r'E:\PYTHON\Store_3d_printing\store_3d\static\img\gallery'
+    file_names = os.listdir(gallery_folder)
+    gallery_range = range(1, len(file_names) + 1)
     content = {
         'title': 'Галерея',
+        'gallery_range': gallery_range,
         **COMMON_CONTENT
     }
-    logger.info('successful')
     logger.debug(f"Страница {content['title']} успешно загружена!")
     return render(request, 'mainapp/gallery.html', content)
+
+
+def articles(request):
+    articles = Article.objects.all()
+    content = {
+        'title': 'Статьи',
+        'articles': articles,
+        **COMMON_CONTENT
+    }
+    logger.debug(f"Страница {content['title']} успешно загружена!")
+    return render(request, 'mainapp/articles.html', content)
+
+
+def create_article(request):
+    if request.method == 'POST':
+        # Получаем данные из POST-запроса
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        # Создаем экземпляр модели Article
+        article = Article(title=title, content=content)
+        article.save()
+        return redirect('articles')
+
+    # Если метод запроса GET, просто отображаем форму для создания статьи
+    return render(request, 'mainapp/articles.html')
 
 
 def contact(request):
@@ -203,7 +235,7 @@ def about(request):
 def manage_products(request):
     if request.method == 'POST':
         if 'create_product' in request.POST:
-            form = ProductForm(request.POST)
+            form = ProductForm(request.POST, request.FILES)
             if form.is_valid():
                 logger.info(f' Валидация формы успешна')
                 form.save()
@@ -212,12 +244,10 @@ def manage_products(request):
         if 'update_product' in request.POST:
             product_id = request.POST.get('product_id')
             product = get_object_or_404(Product, pk=product_id)
-            form = ProductForm(request.POST, instance=product)
+            form = ProductForm(request.POST, request.FILES, instance=product)
             if form.is_valid():
                 form.save()
                 return redirect('manage_products')
-
-        products = Product.objects.all()
 
         if 'cancel' in request.POST:
             return redirect('manage_products')
@@ -235,7 +265,6 @@ def manage_products(request):
     content = {
         'form': form,
         'title': 'Мои товары',
-        'product': product.name,
         'products': products,
         **COMMON_CONTENT
     }

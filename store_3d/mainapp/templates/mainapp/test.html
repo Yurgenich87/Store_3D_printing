@@ -1,0 +1,23 @@
+        <div class="row">
+          {% for product in products %}
+          <div class="col-md-6 mb-4">
+            <div class="card">
+              <div class="card-body text-center">
+                <h3 class="card-title">{{ product.name }}</h3>
+                <p class="card-text">{{ product.description }}</p>
+                <p>Цена: {{ product.price }} руб.</p>
+                <p>Количество: {{ product.quantity }} шт.</p>
+                <form method="post" class="action-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="product_id" value="{{ product.pk }}">
+                  <button type="submit" name="update_product" class="btn-primary">Редактировать</button>
+                </form>
+                <form action="{% url 'delete_product' product.id %}" method="post" class="action-form">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-primary">Удалить</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>

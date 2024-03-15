@@ -13,6 +13,9 @@ import os
 import sys
 from pathlib import Path
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,8 +29,6 @@ SECRET_KEY = 'django-insecure-dsd$%#+z%2qsy@euh)lpsr5&#h4%i+)o@kbmsyhh8z^(uvr%0j
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,13 +53,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'store_3d.urls'
 
-TEMPLATES_DIR = [BASE_DIR / 'templates']
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'templates',
-        ],
+        'DIRS': [TEMPLATES_DIR,],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,13 +70,21 @@ TEMPLATES = [
     },
 ]
 
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sass_processor.finders.CssFinder',
+]
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+SASS_PROCESSOR_ROOT = STATIC_ROOT
+
 LOGIN_URL = '/login/'
 LOGOUT_URL = '/logout/'
 
 WSGI_APPLICATION = 'store_3d.wsgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -86,13 +93,9 @@ DATABASES = {
     }
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 AUTH_USER_MODEL = 'mainapp.User'
-
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -109,9 +112,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -120,17 +120,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+MEDIA_ROOT = 'E:/PYTHON/Store_3d_printing/store_3d/store_3d/media'  # Абсолютный путь к каталогу медиафайлов
+MEDIA_URL = '/media/'           # URL для доступа к медиафайлам из веб-приложения
 
 LOGGING = {
     'version': 1,

@@ -20,42 +20,60 @@
           {% if form.instance.pk %}
           <h3>Редактирование товара: {{ product }}</h3>
           {{ form.as_p }}
-                <button type="submit" name="update_product" class="btn btn-block btn-primary">Изменить</button>
-                <a href="{% url 'manage_products' %}" class="btn btn-block btn-primary">Отмена</a>
+                <button type="submit" name="update_product" class="btn btn-primary">Изменить</button>
+                <a href="{% url 'manage_products' %}" class="btn btn-primary">Отмена</a>
+
             {% else %}
              {{ form.as_p }}
-             <button type="submit" name="create_product" class="btn btn-block btn-primary">Создать новый товар</button>
+             <button type="submit" name="create_product" class="btn btn-primary">Создать новый товар</button>
 
             {% endif %}
         </form>
         <!-- Список товаров и кнопки для их редактирования и удаления -->
+
         <div class="row">
-          {% for product in products %}
-          <div class="col-md-6 mb-4">
-            <div class="card">
-              <div class="card-body text-center">
-                <h3 class="card-title">{{ product.name }}</h3>
-                <p class="card-text">{{ product.description }}</p>
-                <p>Цена: {{ product.price }} руб.</p>
-                <p>Количество: {{ product.quantity }} шт.</p>
-                <form method="post" class="action-form">
-                  {% csrf_token %}
-                  <input type="hidden" name="product_id" value="{{ product.pk }}">
-                  <button type="submit" name="update_product" class="btn btn-info mr-2">Редактировать</button>
-                </form>
-                <form action="{% url 'delete_product' product.id %}" method="post" class="action-form">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-danger">Удалить</button>
-                </form>
+            {% for product in products %}
+            <section id="doctors" class="doctors">
+              <div class="container">
+                <div class="section-title">
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="member d-flex align-items-start">
+                        <div class="pic">
+                          {% if product.image %}
+                            <img src="{{ product.image.url }}" class="img-fluid" alt="">
+                          {% else %}
+                            <p>No image available</p>
+                          {% endif %}
+                        </div>
+                        <div class="member-info">
+                          <h4>{{ product.name }}</h4>
+                          <span>Цена: {{ product.price }} руб.</span>
+                          <p>{{ product.description }}</p>
+                          <p>Количество: {{ product.quantity }} шт.</p>
+                            <form method="post" class="action-form">
+                            {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.pk }}">
+                                <button type="submit" name="update_product" class="btn-primary">Редактировать</button>
+                            </form>
+                            <form action="{% url 'delete_product' product.id %}" method="post" class="action-form">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-primary">Удалить</button>
+                            </form>
+                            </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          {% endfor %}
+            </section>
+                {% endfor %}
         </div>
 
       </div>
     </div>
   </div>
-</section>
+
+
 
 {% endblock %}

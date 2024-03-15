@@ -1,15 +1,15 @@
 from django import forms
 from .models import User, Product, Order
 
-from django.contrib.auth.forms import UserCreationForm
-
 
 class LoginForm(forms.Form):
+    """Form for login"""
     email = forms.EmailField(label='Ваш email')
     password = forms.CharField(label='Ваш пароль', widget=forms.PasswordInput)
 
 
 class UserProfileForm(forms.ModelForm):
+    """Form for updating user profile"""
     class Meta:
         model = User
         fields = ['username', 'password', 'email', 'phone', 'address']
@@ -23,6 +23,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
+    """ Form for creating new users"""
     class Meta:
         model = User
         fields = ['username', 'password', 'email', 'phone', 'address']
@@ -43,9 +44,10 @@ class UserForm(forms.ModelForm):
 
 
 class ProductForm(forms.ModelForm):
+    """Form for creating new products"""
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'quantity']
+        fields = ['name', 'description', 'price', 'quantity', 'image']
         labels = {
             'name': '',
             'description': '',
@@ -61,6 +63,7 @@ class ProductForm(forms.ModelForm):
 
 
 class OrderForm(forms.ModelForm):
+    """Form for creating new Orders"""
     class Meta:
         model = Order
         fields = ['user', 'product', 'quantity']
