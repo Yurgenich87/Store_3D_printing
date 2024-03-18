@@ -9,7 +9,7 @@ from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Count
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -459,20 +459,27 @@ def filter_order(request, days):
         logger.debug(f'Количество дней отсутствует')
 
     start_date = timezone.now() - timezone.timedelta(days=days)
-    logger.debug(f'Фильтр: {start_date = }')
 
     # Фильтрация заказов по пользователю и дате создания
-    filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date)
-    orders = filtered_orders
+    filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date).annotate(
+        num_products=Count('product_id', distinct=True))
+
+    orders = set()
+    for order in filtered_orders:
+        orders.add(order.product)
+
+    logger.debug(f'unique_products: {orders}')
 
     content = {
         'title': 'Фильтр заказов',
         'orders': orders,
         **COMMON_CONTENT
     }
-    logger.debug(f'orders: {orders = }')
 
     return render(request, 'mainapp/manage_orders.html', content)
+
+
+
 
 
 def manage_orders(request):

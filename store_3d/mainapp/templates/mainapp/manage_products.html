@@ -15,7 +15,7 @@
                     <div class="row justify-content-around align-items-center">
                         <div class="col-4 text-md-center">
                             <button type="submit" class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
-                            <i class="ri-add-line align-bottom me-2"></i>Добавить товар</button>
+                            <i class="ri-add-line align-bottom me-2 "></i>Добавить товар</button>
                         </div>
                         <div class="col-4 text-md-center">
                             <p id="productCount">Количество товаров: {{ products|length }}</p>
@@ -24,7 +24,7 @@
                             <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
                                    placeholder="Введите количество дней" id="customDaysInput"
                                    data-bs-custom-class="custom-tooltip"
-                                   data-bs-title="Отобрадится список заказов за введенное количество дней">
+                                   data-bs-title="Отобразится список заказов за введенное количество дней">
 
                             <button type="button" class="blue" onclick="applyCustomDaysFilter('products')">Применить</button>
                             <button type="button" class="red" onclick="resetFilter()">Сбросить</button>

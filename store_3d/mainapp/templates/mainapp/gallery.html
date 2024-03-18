@@ -13,7 +13,7 @@
   <div class="container-fluid">
     <div class="row g-0">
       {% for i in gallery_range %}
-      <div class="col-lg-3 col-md-4">
+      <div class="col-lg-3 col-md-4 ratio">
         <div class="gallery-item">
           <a href="{% static 'img/gallery/gallery-' %}{{ i }}.png" class="gallery-lightbox">
             <img src="{% static 'img/gallery/gallery-' %}{{ i }}.png" class="img-fluid img-thumbnail">

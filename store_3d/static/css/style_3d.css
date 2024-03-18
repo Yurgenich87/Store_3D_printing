@@ -19,29 +19,24 @@ body {
   background-repeat: no-repeat;
 }
 
-#hero .animated {
-  animation: up-down 2s ease-in-out infinite alternate-reverse both;
+.hero .animated {
+  animation: up-down 2s ease-in-out infinite alternate;
 }
 
-img-fluid {
-  // Part 1: Set a maximum relative to the parent
-  max-width: 100%;
-  // Part 2: Override the height to auto, otherwise images will be stretched
-  // when setting a width and height attribute on the img element.
-  height: auto;
-}
 @keyframes up-down {
   0% {
     transform: translateY(10px);
   }
 
-  50% {
+  100% {
     transform: translateY(-10px);
   }
+}
+
 /*--------------------------------------------------------------
 # General
 --------------------------------------------------------------*/
-}
+
 
 body {
   font-family: "Poppins", sans-serif;
@@ -890,23 +885,6 @@ section {
   transition: all 400ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
 
-.about .play-btn::before {
-  content: "";
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  animation-delay: 0s;
-  animation: pulsate-btn 2s;
-  animation-direction: forwards;
-  animation-iteration-count: infinite;
-  animation-timing-function: steps;
-  opacity: 1;
-  border-radius: 50%;
-  border: 5px solid rgba(25, 119, 204, 0.7);
-  top: -15%;
-  left: -15%;
-  background: rgba(198, 16, 0, 0);
-}
 
 .about .play-btn:hover::after {
   border-left: 15px solid #1977cc;

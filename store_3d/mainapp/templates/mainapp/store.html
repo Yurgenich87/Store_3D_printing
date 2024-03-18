@@ -23,10 +23,10 @@
                     <p class="text-info-emphasis">{{ product.price }} руб.</p>
                     <p class="card-text ">Наличие: {{ product.quantity }} шт.</p>
                     <p class="card-text border-bottom">Описание: {{ product.description }}</p>
-                    <button type="submit" class="btn btn-primary add-to-cart-btn" data-product-id="{{ product.id }}">Добавить в корзину</button>
+                    <button type="button" class="blue add-to-cart-btn" data-product-id="{{ product.id }}">Добавить в корзину</button>
                     {% for cart_product in cart_products %}
                         {% if cart_product.product_id == product.id %}
-                            <button type="submit" class="btn btn-danger remove-from-cart-btn" data-product-id="{{ product.id }}">Удалить из корзины: {{ cart_product.quantity }} шт.</button>
+                            <button type="button" class="red remove-from-cart-btn" data-product-id="{{ product.id }}">Удалить из корзины: {{ cart_product.quantity }} шт.</button>
                         {% endif %}
                     {% endfor %}
                 </div>
