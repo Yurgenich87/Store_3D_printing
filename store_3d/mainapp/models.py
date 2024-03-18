@@ -1,5 +1,7 @@
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.db import models
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.utils.html import escape
 
 class UserManager(BaseUserManager):
@@ -66,17 +68,16 @@ class Product(models.Model):
     description = models.CharField(max_length=100)
     price = models.IntegerField()
     quantity = models.IntegerField()
-    at_data = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
+    at_data = models.DateTimeField()
 
 
 class Order(models.Model):
     """Order model"""
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    price_sum = models.DecimalField(max_digits=10, decimal_places=2)
+    sum_orders = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
-    at_data = models.DateTimeField(auto_now_add=True)
+    at_data = models.DateTimeField()
 
 
 class Article(models.Model):
@@ -88,5 +89,29 @@ class Article(models.Model):
         return self.title
 
     def get_html_content(self):
-        """Return the content as HTML"""
-        return escape(self.content)  # Обработка специальных символов HTML
+        return escape(self.content)
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product, through='CartItem')
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+    description = models.CharField(max_length=100)
+
+
+    def save(self, *args, **kwargs):
+        # Заполняем поля name, description и price из связанной модели Product
+        self.name = self.product.name
+        self.description = self.product.description
+        self.price = self.product.price
+        super().save(*args, **kwargs)
+
+

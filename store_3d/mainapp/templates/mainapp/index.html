@@ -5,100 +5,25 @@
 
 {% block content %}
 <div class="section-title">
-<div class="row">
-
-<section id="doctors" class="doctors">
-      <div class="container">
-
-        <div class="section-title">
-          <h2>Приветствуем на нашем сайте</h2>
-          <p>Здесь вы найдете все необходимое для воплощения своих творческих идей в реальность с помощью технологий 3D печати.</p>
-        </div>
-
-        <div class="row">
-
-          <div class="col-lg-6">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="assets/img/doctors/doctors-1.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>Walter White</h4>
-                <span>Chief Medical Officer</span>
-                <p>Explicabo voluptatem mollitia et repellat qui dolorum quasi</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6 mt-4 mt-lg-0">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="assets/img/doctors/doctors-2.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>Sarah Jhonson</h4>
-                <span>Anesthesiologist</span>
-                <p>Aut maiores voluptates amet et quis praesentium qui senda para</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6 mt-4">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="assets/img/doctors/doctors-3.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>William Anderson</h4>
-                <span>Cardiology</span>
-                <p>Quisquam facilis cum velit laborum corrupti fuga rerum quia</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-6 mt-4">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="assets/img/doctors/doctors-4.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>Amanda Jepson</h4>
-                <span>Neurosurgeon</span>
-                <p>Dolorum tempora officiis odit laborum officiis et et accusamus</p>
-                <div class="social">
-                  <a href=""><i class="ri-twitter-fill"></i></a>
-                  <a href=""><i class="ri-facebook-fill"></i></a>
-                  <a href=""><i class="ri-instagram-fill"></i></a>
-                  <a href=""> <i class="ri-linkedin-box-fill"></i> </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
+    <div class="row text-md-center">
+      <div class="member-info">
+        <h4>Приветствуем на нашем сайте 3D печати</h4>
+        <span></span>
       </div>
-    </section>
-
-        </div>
-    <div class="col-lg-6">
-            <div class="member d-flex align-items-start">
-              <div class="pic"><img src="assets/img/doctors/doctors-1.jpg" class="img-fluid" alt=""></div>
-              <div class="member-info">
-                <h4>Приветствуем на нашем сайте 3D печати</h4>
-                <span></span>
-                <p>Explicabo voluptatem mollitia et repellat qui dolorum quasi</p>
-              </div>
-            </div>
-          </div>
+    </div>
     <h3 class="display-4"></h3>
     <p class="lead"></p>
     <hr class="my-4">
-    <p>Наш магазин предлагает широкий ассортимент 3D принтеров, расходных материалов и аксессуаров высокого качества. В нашей галерее вы сможете ознакомиться с уникальными проектами, созданными нашими клиентами, а также найти вдохновение для своих собственных идей.</p>
+    <div class="row">
+        <div class="col">
+    <p>Наш сайт предлагает ассортимент 3D принтеров, расходных материалов и аксессуаров высокого качества. В нашей галерее вы сможете ознакомиться с уникальными проектами, созданными нашими клиентами, а также найти вдохновение для своих собственных идей.</p>
     <p>Мы также предоставляем различные сервисы, включая услуги моделирования, печати на заказ и консультации по выбору оборудования и материалов.</p>
+        </div>
+        <div class="col">
+          <img src="{% static 'media/hero-img.png' %}" class="img-fluid animated hero-img" alt="">
+        </div>
+      </div>
+    </div>
 </div>
+
 {% endblock %}

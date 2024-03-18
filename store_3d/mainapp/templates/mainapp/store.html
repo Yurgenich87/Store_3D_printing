@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="section-title">
+    <h2>{{ title }}</h2>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for product in products %}
+        <div class="col ">
+            <div class="card text-info-emphasis">
+                <div class="card-body ">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-header">
+                        {{ product.name }}
+                    </div>
+                    <p class="text-info-emphasis">{{ product.price }} руб.</p>
+                    <p class="card-text ">Наличие: {{ product.quantity }} шт.</p>
+                    <p class="card-text border-bottom">Описание: {{ product.description }}</p>
+                    <button type="submit" class="btn btn-primary add-to-cart-btn" data-product-id="{{ product.id }}">Добавить в корзину</button>
+                    {% for cart_product in cart_products %}
+                        {% if cart_product.product_id == product.id %}
+                            <button type="submit" class="btn btn-danger remove-from-cart-btn" data-product-id="{{ product.id }}">Удалить из корзины: {{ cart_product.quantity }} шт.</button>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <img src="..." class="rounded me-2" alt="...">
+      <strong class="me-auto">Bootstrap</strong>
+      <small>11 мин назад</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+    </div>
+    <div class="toast-body">
+      Привет, мир! Это тост-сообщение.
+    </div>
+  </div>
+</div>
+{% endblock %}

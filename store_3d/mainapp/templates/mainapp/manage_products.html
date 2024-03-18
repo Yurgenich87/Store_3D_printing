@@ -4,76 +4,147 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+{% csrf_token %}
+<div class="section-title">
+    <h2>{{ title }}</h2>
+</div>
 
-<section id="product-management" class="section-bg">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-8 text-center">
-
-        <div class="section-title">
-          <h2>{{ title }}</h2>
-        </div>
-
-        <form method="post" class="mb-4">
-            {% csrf_token %}
-
-          {% if form.instance.pk %}
-          <h3>Редактирование товара: {{ product }}</h3>
-          {{ form.as_p }}
-                <button type="submit" name="update_product" class="btn btn-primary">Изменить</button>
-                <a href="{% url 'manage_products' %}" class="btn btn-primary">Отмена</a>
-
-            {% else %}
-             {{ form.as_p }}
-             <button type="submit" name="create_product" class="btn btn-primary">Создать новый товар</button>
-
-            {% endif %}
-        </form>
-        <!-- Список товаров и кнопки для их редактирования и удаления -->
-
+<div class="card">
+    <div id="customerList">
         <div class="row">
-            {% for product in products %}
-            <section id="doctors" class="doctors">
-              <div class="container">
-                <div class="section-title">
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <div class="member d-flex align-items-start">
-                        <div class="pic">
-                          {% if product.image %}
-                            <img src="{{ product.image.url }}" class="img-fluid" alt="">
-                          {% else %}
-                            <p>No image available</p>
-                          {% endif %}
+                    <div class="row justify-content-around align-items-center">
+                        <div class="col-4 text-md-center">
+                            <button type="submit" class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
+                            <i class="ri-add-line align-bottom me-2"></i>Добавить товар</button>
                         </div>
-                        <div class="member-info">
-                          <h4>{{ product.name }}</h4>
-                          <span>Цена: {{ product.price }} руб.</span>
-                          <p>{{ product.description }}</p>
-                          <p>Количество: {{ product.quantity }} шт.</p>
-                            <form method="post" class="action-form">
-                            {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.pk }}">
-                                <button type="submit" name="update_product" class="btn-primary">Редактировать</button>
-                            </form>
-                            <form action="{% url 'delete_product' product.id %}" method="post" class="action-form">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-primary">Удалить</button>
-                            </form>
-                            </div>
-                      </div>
-                    </div>
-                  </div>
+                        <div class="col-4 text-md-center">
+                            <p id="productCount">Количество товаров: {{ products|length }}</p>
+                        </div>
+                        <div class="col-4 text-md-center">
+                            <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                   placeholder="Введите количество дней" id="customDaysInput"
+                                   data-bs-custom-class="custom-tooltip"
+                                   data-bs-title="Отобрадится список заказов за введенное количество дней">
+
+                            <button type="button" class="blue" onclick="applyCustomDaysFilter('products')">Применить</button>
+                            <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
+                        </div>
+            </div>
+                <div class="table-responsive table-card mt-3 mb-1">
+                    <table class="table align-middle table-nowrap table-striped" id="customerTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sort" data-sort="id">ID</th>
+                                <th class="sort" data-sort="name">Наименование</th>
+                                <th class="sort" data-sort="price">Цена</th>
+                                <th class="sort" data-sort="quantity">Кол-во</th>
+                                <th class="sort" data-sort="description">Описание</th>
+                                <th class="sort" data-sort="at_data">Дата добавления</th>
+                                <th class="sort" data-sort="date"></th>
+                            </tr>
+
+                        </thead>
+                        {% for product in products %}
+                            <tbody class="list form-check-all">
+                                <tr>
+                                    <td class="table">{{ product.id }}</td>
+                                    <td class="table">{{ product.name }}</td>
+                                    <td class="table">{{ product.price }} руб.</td>
+                                    <td class="table">{{ product.quantity }} шт.</td>
+                                    <td class="table">{{ product.description }}</td>
+                                    <td class="table">{{ product.at_data }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <div class="edit">
+                                                <button type="submit" class="blue edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-product-id="{{ product.id }}" onclick="editProduct({{ product.id }})">Редактировать</button>
+                                            </div>
+                                            <div class="remove">
+<button type="submit" id="remove-item-btn" class="red" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-product-id="{{ product.id }}">Удалить</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        {% endfor %}
+                    </table>
                 </div>
-              </div>
-            </section>
-                {% endfor %}
+            </div>
         </div>
-
-      </div>
     </div>
-  </div>
+</div>
+<!-- end card -->
+<div class="modal fade" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info p-3 d-flex justify-content-between">
+                <h5 class="modal-title" id="exampleModalLabel">111111</h5>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="mb-3" id="modal-id" style="display: none;">
+                        <label for="id-field" class="form-label">ID</label>
+                        <input type="text" id="id-field" class="form-control" placeholder="ID" readonly="">
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="name-label">Наименование</span>
+                            <input type="text" id="name" class="form-control" aria-describedby="name-label" required="">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="price-label">Цена</span>
+                            <input type="number" id="price" class="form-control" aria-describedby="price-label" required="">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="quantity-label">Кол-во</span>
+                            <input type="text" id="quantity" class="form-control" aria-describedby="quantity-label" required="">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="description-label">Описание</span>
+                            <input type="text" id="description" class="form-control" aria-describedby="description-label" required="">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: block;">
+                    <div class="hstack gap-2 justify-content-end">
+                        <button type="submit" class="blue" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="blue" id="add-btn" style="display: block;">Добавить</button>
+                        <button type="submit" class="blue" id="edit-btn" style="display: none;">Обновить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
-
+<div class="modal fade zoomIn" id="deleteRecordModal" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btn-close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mt-2 text-center">
+                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop" colors="primary:#f7b84b,secondary:#f06548" style="width:100px;height:100px"></lord-icon>
+                    <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
+                        <h4>Подтверждение!!!</h4>
+                        <p class="text-muted mx-4 mb-0">Вы уверены что хотите удалить товар ?</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
+                    <button type="submit" class="blue" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="red" id="delete-record">Да, удалить!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
 
 {% endblock %}

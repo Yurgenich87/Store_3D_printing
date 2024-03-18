@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <div class="section-title">
+        <h2>{{ title }}</h2>
+    </div>
+
+    <div class="card">
+        <div id="customerList">
+            <div class="row g-4 mb-3">
+                <div class="col-sm-auto">
+                    <div class="row justify-content-around align-items-center">
+                        <div class="col-4">
+                            <p id="productCount">Количество товаров: {{ cartitems|length }}</p>
+                        </div>
+                        <div class="col-4 text-md-center">
+                                        <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                               placeholder="Введите количество дней" id="customDaysInput"
+                                               data-bs-custom-class="custom-tooltip"
+                                               data-bs-title="Отобразится список заказов за введенное количество дней">
+                                        <button type="button" class="blue" onclick="applyCustomDaysFilter('cart')">Применить</button>
+                                        <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive table-card mt-3 mb-1">
+                        <table class="table align-middle table-nowrap table-striped" id="customerTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="sort" data-sort="name">Наименование</th>
+                                    <th class="sort" data-sort="price">Цена</th>
+                                    <th class="sort" data-sort="quantity">Кол-во</th>
+                                    <th class="sort" data-sort="description">Описание</th>
+                                    <th class="sort" data-sort="at_data">Дата добавления</th>
+                                    <th class="sort" data-sort="date">Всего: {{ total_price }} руб.</th>
+                                </tr>
+                            </thead>
+                            {% for product in cartitems %}
+
+
+                            <tbody class="list form-check-all">
+                                <tr>
+                                    <td class="name">{{ product.name }}</td>
+                                    <td class="price">{{ product.price }} руб.</td>
+                                    <td class="quantity">{{ product.quantity }} шт.</td>
+                                    <td class="description">{{ product.description }}</td>
+                                    <td class="at_data">{{ product.at_data }}</td>
+                                    <td>
+                                        <button type="submit" class="blue" data-product-id="{{ product.id }}">Добавить</button>
+                                        <button type="submit" class="red" data-product-id="{{ product.id }}">Удалить</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

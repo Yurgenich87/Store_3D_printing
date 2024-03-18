@@ -1,14 +1,23 @@
+import json
 import logging
 import os
+import random
+from datetime import timedelta, datetime
 
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.db import transaction
+from django.db.models import F
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
-from .models import User, Order, Product, Article
+from .models import User, Order, Product, Article, CartItem, Cart
 from .forms import UserForm, LoginForm, UserProfileForm, ProductForm, OrderForm
 
 logger = logging.getLogger(__name__)
@@ -16,6 +25,7 @@ logger = logging.getLogger(__name__)
 COMMON_CONTENT = settings.COMMON_CONTENT
 
 logger = logging.getLogger(__name__)
+
 
 def sass_page_handler(request):
     return render(request,'mainapp/sass.html', COMMON_CONTENT)
@@ -190,15 +200,12 @@ def articles(request):
 
 def create_article(request):
     if request.method == 'POST':
-        # Получаем данные из POST-запроса
         title = request.POST.get('title')
         content = request.POST.get('content')
-        # Создаем экземпляр модели Article
         article = Article(title=title, content=content)
         article.save()
         return redirect('articles')
 
-    # Если метод запроса GET, просто отображаем форму для создания статьи
     return render(request, 'mainapp/articles.html')
 
 
@@ -207,7 +214,6 @@ def contact(request):
     #     form = MyModelForm(request.POST)
     #     if form.is_valid():
     #         form.save()
-    #         # Можно сделать что-то после успешного сохранения
     #         return redirect('success_url')
     # else:
     #     form = MyModelForm()
@@ -231,93 +237,120 @@ def about(request):
     return render(request, 'mainapp/about.html', content)
 
 
+@login_required
+def store(request):
+    user = request.user
+    products = Product.objects.all()
+    cart_products = CartItem.objects.filter(cart__user=user)
+    context = {
+        'products': products,
+        'cart_products': cart_products,
+        'title': 'Магазин',
+        **COMMON_CONTENT
+    }
+
+    logger.debug(f"Страница {context['title']} успешно загружена!, Вошел пользователь: {user.id}")
+    return render(request, 'mainapp/store.html', context)
+
+
 # ________________________________________________________Product_____________________________________________________
+
+
 def manage_products(request):
-    if request.method == 'POST':
-        if 'create_product' in request.POST:
-            form = ProductForm(request.POST, request.FILES)
-            if form.is_valid():
-                logger.info(f' Валидация формы успешна')
-                form.save()
-                return redirect('manage_products')
-
-        if 'update_product' in request.POST:
-            product_id = request.POST.get('product_id')
-            product = get_object_or_404(Product, pk=product_id)
-            form = ProductForm(request.POST, request.FILES, instance=product)
-            if form.is_valid():
-                form.save()
-                return redirect('manage_products')
-
-        if 'cancel' in request.POST:
-            return redirect('manage_products')
-
-        if 'delete_product' in request.POST:
-            product_id = request.POST.get('product_id')
-            product = get_object_or_404(Product, pk=product_id)
-            product.delete()
-            return redirect('manage_products')
-
-    else:
-        form = ProductForm()
-
     products = Product.objects.all()
     content = {
-        'form': form,
         'title': 'Мои товары',
         'products': products,
         **COMMON_CONTENT
     }
+
     logger.debug(f"Страница {content['title']} успешно загружена!")
     return render(request, 'mainapp/manage_products.html', content)
 
 
+@csrf_exempt
 def create_product(request):
     if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('manage_products')  # Redirect to product list page
+        if request.headers.get('X-CSRFToken') != request.COOKIES.get('csrftoken'):
+            return JsonResponse({'error': 'CSRF token mismatch'}, status=403)
+
+        data = json.loads(request.body)
+        name = data.get('name')
+        price = data.get('price')
+        quantity = data.get('quantity')
+        description = data.get('description')
+
+        product = Product.objects.create(name=name, price=price, quantity=quantity, description=description)
+
+        return JsonResponse({'success': 'Product created successfully'})
     else:
-        form = ProductForm()
-    context = {
-        'form': form,
-        'title': 'Create Product',
-        **COMMON_CONTENT
-    }
-    return render(request, 'mainapp/create_product.html', context)
+        return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
 
 
 def update_product(request, product_id):
+    logger.info(f'Обновление данных продукта {product_id}')
     product = get_object_or_404(Product, pk=product_id)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
+    if request.method == 'PUT':
+        # Получаем данные JSON из тела запроса
+        data = json.loads(request.body)
+        form = ProductForm(data, instance=product)
         if form.is_valid():
             form.save()
-            return redirect('manage_products')
+            logger.info(f' Продукт {data["name"]} обновлен.')
+            return JsonResponse({'message': 'Product updated successfully'}, status=200)
+        else:
+            return JsonResponse({'error': form.errors}, status=400)
     else:
-        form = ProductForm(instance=product)
-    context = {
-        'form': form,
-        'title': 'Update Product',
-        'product': product,
+        return JsonResponse({'error': 'PUT request expected'}, status=405)
+
+
+def product_list(request):
+    products = Product.objects.all()
+    data = [{
+        'id': product.id,
+        'name': product.name,
+        'description': product.description,
+        'price': product.price,
+        'quantity': product.quantity,
+    }
+        for product in products]
+    return JsonResponse(data, safe=False)
+
+
+def filter_products(request, days):
+    logger.debug(f'Фильтр: {request = } {days = }')
+    try:
+        days = int(days)
+    except ValueError:
+        logger.debug(f'Количечтво дней отсутствует')
+
+    start_date = timezone.now() - timezone.timedelta(days=days)
+    logger.debug(f'Фильтр: {start_date = }')
+
+    filtered_products = Product.objects.filter(at_data__gte=start_date)
+    products = filtered_products
+    content = {
+        'title': 'Фильтр товаров',
+        'products': products,
         **COMMON_CONTENT
     }
-    return render(request, 'mainapp/update_product.html', context)
+    logger.debug(f'products: {products = }')
 
 
+    return render(request, 'mainapp/manage_products.html', content)
+
+
+@require_http_methods(["POST", "PUT"])
 def delete_product(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
-    if request.method == 'POST':
+    if request.method == 'POST' or request.method == 'PUT':
         product.delete()
-        return redirect('manage_products')
-    context = {
-        'product': product,
-        'title': 'Delete Product',
-        **COMMON_CONTENT
-    }
-    return render(request, 'mainapp/manage_products.html', context)
+        return JsonResponse({'success': True})
 
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+# ________________________________________________________Orders_____________________________________________________
 
 def orders(request, pk=None):
     if pk:
@@ -338,6 +371,21 @@ def orders(request, pk=None):
         template_name = 'mainapp/manage_orders.html'
 
     return render(request, template_name, context)
+
+
+def randomize_order_dates(request):
+    start_date = timezone.make_aware(datetime(2022, 1, 1, 13, 4, 4))
+    end_date = timezone.make_aware(datetime(2024, 3, 18, 13, 4, 4))
+
+    orders = Order.objects.all()
+    logger.debug(f"start_date {start_date} end_date: {end_date}")
+
+    for order in orders:
+        random_date = start_date + timedelta(days=random.randint(0, (end_date - start_date).days))
+        order.at_data = random_date
+        order.save()
+
+    return HttpResponse("Order dates have been randomized successfully")
 
 
 def create_order(request):
@@ -373,7 +421,7 @@ def update_order(request, order_id):
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
             form.save()
-            order.price_sum = order.product.price * form.cleaned_data['quantity']
+            order.sum_orders = order.product.price * form.cleaned_data['quantity']
             order.save()
             return redirect('manage_orders')
 
@@ -385,6 +433,7 @@ def update_order(request, order_id):
         'order': order,  # Передаем объект заказа в контекст
         **COMMON_CONTENT
     }
+
     return render(request, 'mainapp/update_order.html', context)
 
 
@@ -401,6 +450,31 @@ def delete_order(request, order_id):
     return render(request, 'mainapp/delete_order.html', context)
 
 
+@login_required
+def filter_order(request, days):
+    logger.debug(f'Фильтр: {request = } {days = }')
+    try:
+        days = int(days)
+    except ValueError:
+        logger.debug(f'Количество дней отсутствует')
+
+    start_date = timezone.now() - timezone.timedelta(days=days)
+    logger.debug(f'Фильтр: {start_date = }')
+
+    # Фильтрация заказов по пользователю и дате создания
+    filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date)
+    orders = filtered_orders
+
+    content = {
+        'title': 'Фильтр заказов',
+        'orders': orders,
+        **COMMON_CONTENT
+    }
+    logger.debug(f'orders: {orders = }')
+
+    return render(request, 'mainapp/manage_orders.html', content)
+
+
 def manage_orders(request):
     orders = Order.objects.all()
     context = {
@@ -408,4 +482,118 @@ def manage_orders(request):
         'title': 'Мои заказы',
         **COMMON_CONTENT
     }
+
     return render(request, 'mainapp/manage_orders.html', context)
+
+
+# ________________________________________________________Cart_____________________________________________________
+@login_required
+def view_cart(request):
+    user = request.user
+    cartitems = CartItem.objects.filter(cart__user=user) # Получаем товары в корзине пользователя
+    total_price = sum(item.product.price * item.quantity for item in cartitems)  # Вычисляем общую стоимость товаров в корзине
+    context = {
+        'cartitems': cartitems,
+        'total_price': total_price,
+        'title': 'Корзина',
+        **COMMON_CONTENT
+    }
+
+    logger.debug(f"Страница {context['title']} успешно загружена!")
+
+    return render(request, 'mainapp/cart.html', context)
+
+
+def add_to_cart(request, product_id):
+    if request.method == 'POST':
+        try:
+            product = Product.objects.get(pk=product_id)
+            quantity = 1  # Устанавливаем количество товара равным 1
+            sum_orders = product.price * quantity
+
+            # Получаем или создаем корзину пользователя
+            cart, created = Cart.objects.get_or_create(user=request.user)
+
+            # Получаем или создаем запись о товаре в корзине
+            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+
+            # Если запись уже существует, увеличиваем количество товара
+            if not created:
+                cart_item.quantity += quantity
+                cart_item.save()
+                cart.total_price += sum_orders
+                cart.save()
+            else:
+                # Создаем заказ для добавления товара в корзину только при создании новой записи о товаре в корзине
+                order = Order(user=request.user, product=product, quantity=quantity,
+                              sum_orders=sum_orders, at_data=timezone.now())
+                order.save()
+
+            logger.debug(f"Товар {product.id} добавлен в корзину")
+
+            # Получаем текущее количество записей в корзине и отправляем его в ответе
+            cart_item_count = cart_item.quantity
+            logger.debug(f"cart_item_count {cart_item_count = }, {cart_item.quantity = }")
+            return JsonResponse({'success': True, 'cartItemCount': cart_item_count})
+
+        except Exception as e:
+            logger.debug(f"Товар {product.id} не добавлен в корзину: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+
+
+def remove_from_cart(request, product_id):
+    if request.method == 'POST':
+        try:
+            # Получаем товар по его ID
+            product = Product.objects.get(pk=product_id)
+
+            # Получаем корзину текущего пользователя
+            cart, created = Cart.objects.get_or_create(user=request.user)
+
+            # Получаем запись о товаре в корзине, если она существует
+            cart_item = CartItem.objects.filter(cart=cart, product=product).first()
+
+            if cart_item:
+                # Уменьшаем количество товара на 1
+                cart_item.quantity -= 1
+
+                # Если количество стало нулевым или меньше, удаляем запись о товаре из корзины
+                if cart_item.quantity <= 0:
+                    cart_item.delete()
+                else:
+                    cart_item.save()
+
+                logger.debug(f"Товар {product.id} удален из корзины")
+
+                # Получаем текущее количество записей в корзине и отправляем его в ответе
+                cart_item_count = CartItem.objects.filter(cart=cart).count()
+                return JsonResponse({'success': True, 'cartItemCount': cart_item_count})
+            else:
+                logger.debug(f"Товар {product.id} не найден в корзине")
+                return JsonResponse({'success': False, 'error': 'Товар не найден в корзине'})
+
+        except Exception as e:
+            logger.debug(f"Ошибка при удалении товара из корзины: {e}")
+            return JsonResponse({'success': False, 'error': str(e)})
+
+
+def filter_products_in_cart(request, days):
+    logger.debug(f'Фильтр: {request = } {days = }')
+    try:
+        days = int(days)
+    except ValueError:
+        logger.debug(f'Количечтво дней отсутствует')
+
+    start_date = timezone.now() - timezone.timedelta(days=days)
+    logger.debug(f'Фильтр: {start_date = }')
+
+    filtered_products = Product.objects.filter(user=request.user, at_data__gte=start_date)
+    products = filtered_products
+    content = {
+        'title': 'Фильтр товаров',
+        'products': products,
+        **COMMON_CONTENT
+    }
+    logger.debug(f"Страница {content['title']} успешно загружена!")
+
+    return render(request, 'mainapp/cart.html', content)

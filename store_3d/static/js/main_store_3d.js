@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
 (function() {
   "use strict";  // Вспомогательная функция для выбора элементов
   const select = (el, all = false) => {

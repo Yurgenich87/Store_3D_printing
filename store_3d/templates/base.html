@@ -1,112 +1,124 @@
-{% load static %}
 <!DOCTYPE html>
 <html>
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% load static %}
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }}</title>
 
   <!-- Favicons -->
-  <link href="{% static 'img/favicon.png' %}" rel="icon">
+  <link href="{% static 'img/fav_icon.png' %}" rel="icon">
   <link href="{% static 'img/apple-touch-icon.png' %}" rel="apple-touch-icon">
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
-  <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/animate.css/animate.min.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/remixicon/remixicon.css' %}" rel="stylesheet">
-  <link href="{% static 'vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-  <!-- Template Main CSS File -->
+    <!-- Bootstrap CSS Files -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.rtl.css' %}" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/animate.css/animate.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/line-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/Datepicker.js-master/dist/css/datepicker.material.css' %}" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
     <link rel="stylesheet" type="text/css" href="{% static 'css/style_3d.css' %}?version=1.0">
-</head>
-
 <body>
-
-    <!-- ======= Top Bar ======= -->
-    <div id="topbar" class="d-flex align-items-center fixed-top">
-        <div class="container d-flex justify-content-between">
-            <div class="contact-info d-flex align-items-center">
-                <i class="bi bi-envelope"></i> <a href="mailto:contact@example.com"> {{ email_store }} </a>
-                <i class="bi bi-phone"></i> {{ phone }}
-                <c class="bi bi-people"></c>
+<header id="header_3d" class="d-flex flex-wrap justify-content-center py-1 border-bottom">
+    <div class="container text-center">
+        <div class="row justify-content-start border-bottom">
+            <div class="col-6 col-md-3">
+                <a class="las la-envelope" href="mailto:contact@example.com"> {{ email_store }} </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a class="las la-phone-volume" href="mailto:contact@example.com">{{ phone }}</a>
+            </div>
+            <div class="col-6 col-md-3">
                 <a class="contact-info">
                     {% if user.is_authenticated %}
                         <span><a href="{% url 'profile' %}">{{ user.username }}</a></span>
-                        <a href="{% url 'logout' %}">Выйти</a>
+                        <a href="{% url 'logout' %}" class="link-danger ">Выйти, </a>
+                    <a href="{% url 'cart' %}">
+                        корзина:
+                        <i class="las la-cart-arrow-down la-2x link-success"></i>
+                    </a>
                     {% else %}
                         <a href="{% url 'login' %}">Вы не вошли в систему. Войти</a>
                     {% endif %}
                 </a>
             </div>
-            <div class="d-none d-lg-flex social-links align-items-center">
+            <div class="col-6 col-md-3 text-md-right">
                 <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
                 <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
                 <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
                 <a href="#" class="facebook"><i class="bi bi-telegram"></i></a>
             </div>
         </div>
+
+        <div class="row justify-content-between">
+            <div class="col-5 text-md-center">
+                <h1><a href="{% url 'index' %}" class="link-primary">{{ name_store }}</a></h1>
+            </div>
+            <div class="col-7">
+                    <nav id="navbar" class="navbar order-last order-lg-0">
+                    <ul>
+                    <li><a class="nav-link scrollto" href="/about/">О нас</a></li>
+                    <li><a class="nav-link scrollto" href="/gallery/">Галерея</a></li>
+                    <li><a class="nav-link scrollto" href="/articles/">Статьи</a></li>
+                    <li><a class="nav-link scrollto" href="/articles/">Статьи</a></li>
+                    <li><a class="nav-link scrollto" href="/contact/">Контакты</a></li>
+                        <li><a class="nav-link scrollto" href="/store/">Магазин</a></li>
+                        <li><a class="nav-link scrollto" href="/products/">Продукция</a></li>
+                        <li><a class="nav-link scrollto" href="/orders/">Ордера</a></li>
+                    </ul>
+                        <i class="bi bi-list mobile-nav-toggle"></i>
+                    </nav>
+                <!-- .navbar -->
+            </div>
+        </div>
+        <div class="row justify-content-end">
+            <div class="col-12">
+                <section class="breadcrumbs">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <ol>
+                            {% if title == 'Главная' %}
+                            <li><a href="{% url 'index' %}">{{ title }}</a></li>
+                            {% else %}
+                            <li><a href="{% url 'index' %}">{{ main }}</a></li>
+                            <li> {{ title }}</li>
+                            {% endif %}
+                            </ol>
+                        </div>
+                </section>
+            </div>
+        </div>
     </div>
 
-    <!-- ======= Header ======= -->
-    <header id="header" class="fixed-top">
-    <div class="container d-flex align-items-center">
+</header>
 
-    <h1 class="logo me-auto"><a href="{% url 'index' %}">{{ name_store }}</a></h1>
+<main class="main-content">
 
-    <nav id="navbar" class="navbar order-last order-lg-0">
-    <ul>
-    <li><a class="nav-link scrollto" href="/about">О нас</a></li>
-    <li><a class="nav-link scrollto" href="/gallery">Галерея</a></li>
-    <li><a class="nav-link scrollto" href="/articles">Статьи</a></li>
-    <li><a class="nav-link scrollto" href="/products">Продукция</a></li>
-    <li><a class="nav-link scrollto" href="/orders">Ордера</a></li>
-    <li><a class="nav-link scrollto" href="/contact">Контакты</a></li>
-    </ul>
-    <i class="bi bi-list mobile-nav-toggle"></i>
-    </nav>
-    <!-- .navbar -->
-    </div>
-    </header><!-- End Header -->
-    <main id="main">
 
-    <!-- Breadcrumbs Section -->
-    <section class="breadcrumbs">
-    <div class="container">
-    <div class="d-flex justify-content-between align-items-center">
-    <ol>
-    {% if title == 'Главная' %}
-    <li><a href="{% url 'index' %}">{{ title }}</a></li>
-    {% else %}
-    <li><a href="{% url 'index' %}">{{ main }}</a></li>
-    <li> {{ title }}</li>
-    {% endif %}
-    </ol>
-    </div>
-    </div>
-    </section>
-
-    <!-- End Breadcrumbs -->
     <div class="container" style="min-height: 57vh;">
     {% block content %}{% endblock %}
     </div>
     </main>
     <!-- ======= Footer ======= -->
-    <footer id="footer_3d" >
+<footer id="footer_3d" >
     <div class="container">
         <div class="row">
             <div class="col-lg-3 col-md-6 footer_3d-contact">
                 <p>
                     {{ city }} <br>
-                    <strong>Телефон:</strong> {{ phone }}<br>
-                    <strong>Email:</strong> {{ email_store }}<br>
+                    <strong class="las la-user-astronaut la-2x"></strong>  {{ phone }}<br>
+                    <strong class="las la-envelope la-2x"></strong>  {{ email_store }} <br>
                 </p>
             </div>
 
@@ -146,19 +158,26 @@
             <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
         </div>
     </div>
-    </footer>
-
+</footer>
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center active"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Bootstrap JS Files -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
 
     <!-- Vendor JS Files -->
     <script src="{% static 'vendor/glightbox/js/glightbox.min.js' %}"></script>
     <script src="{% static 'vendor/purecounter/purecounter_vanilla.js' %}"></script>
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'vendor/swiper/swiper-bundle.min.js' %}"></script>
     <script src="{% static 'vendor/php-email-form/validate.js' %}"></script>
-
+    <script src="{% static 'js/jquery-3.7.1.js' %}"></script>
+    <script src="{% static 'vendor/Datepicker.js-master/dist/datepicker.js' %}"></script>
     <!-- Template Main JS File -->
+
     <script src="{% static 'js/main_store_3d.js' %}"></script>
+    <script src="{% static 'js/listjs.init.js' %}"></script>
+    <script src="{% static 'js/list.min.js' %}"></script>
+
 </body>
 
 </html>

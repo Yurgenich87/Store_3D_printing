@@ -16,6 +16,9 @@ from pathlib import Path
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+APPEND_SLASH = False
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -172,4 +175,13 @@ COMMON_CONTENT = {
     'email_store': 'yurakarbushev@gmail.com',
     'address': 'ул. Кирова, 40',
     'city': 'Новокузнецк',
+}
+
+
+settings.CONTENT_TYPES = {
+    "txt": "text/plain",
+    "html": "text/html",
+    "css": "text/css",
+    "js": "text/javascript",
+    "json": "application/json",
 }

@@ -47,18 +47,20 @@ class ProductForm(forms.ModelForm):
     """Form for creating new products"""
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'quantity', 'image']
+        fields = ['name', 'description', 'price', 'quantity']
         labels = {
             'name': '',
-            'description': '',
             'price': '',
             'quantity': '',
+            'description': '',
+
         }
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Товар'}),
-            'description': forms.TextInput(attrs={'placeholder': 'Описание'}),
             'price': forms.NumberInput(attrs={'placeholder': 'Цена'}),
             'quantity': forms.NumberInput(attrs={'placeholder': 'Кол-во'}),
+            'description': forms.TextInput(attrs={'placeholder': 'Описание'}),
+
         }
 
 
