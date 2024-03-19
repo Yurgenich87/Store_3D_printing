@@ -461,25 +461,26 @@ def filter_order(request, days):
     start_date = timezone.now() - timezone.timedelta(days=days)
 
     # Фильтрация заказов по пользователю и дате создания
-    filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date).annotate(
-        num_products=Count('product_id', distinct=True))
+    filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date)
 
-    orders = set()
+    unique_products = set()
+    unique_orders = []
     for order in filtered_orders:
-        orders.add(order.product)
+        # Проверяем, есть ли товар уже в списке уникальных товаров
+        if order.product not in unique_products:
+            unique_products.add(order.product)
+            # Добавляем заказ с уникальным товаром в список уникальных заказов
+            unique_orders.append(order)
 
-    logger.debug(f'unique_products: {orders}')
+    logger.debug(f'unique_orders: {unique_orders}')
 
     content = {
         'title': 'Фильтр заказов',
-        'orders': orders,
+        'orders': unique_orders,
         **COMMON_CONTENT
     }
 
     return render(request, 'mainapp/manage_orders.html', content)
-
-
-
 
 
 def manage_orders(request):
