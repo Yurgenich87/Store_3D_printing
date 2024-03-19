@@ -408,6 +408,31 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const toggleContent = document.querySelector('.toggle-content');
+
+        toggleBtn.addEventListener('click', function() {
+            if (toggleContent.style.display === 'none') {
+                toggleContent.style.display = 'block';
+                toggleBtn.textContent = 'Скрыть содержимое';
+            } else {
+                toggleContent.style.display = 'none';
+                toggleBtn.textContent = 'Показать содержимое';
+            }
+        });
+    });
+
+    $(document).ready(function(){
+        // Обработка клика на элементы с атрибутом data-toggle="collapse"
+        $('[data-toggle="collapse"]').on('click', function(){
+            // Получение целевого элемента, который нужно свернуть или развернуть
+            var target = $(this).data('target');
+            // Свернуть или развернуть целевой элемент
+            $(target).collapse('toggle');
+        });
+    });
+
     // Функция для очистки полей модального окна при его скрытии
     document.getElementById("showModal").addEventListener("hidden.bs.modal", function() {
         document.getElementById("name").value = "";

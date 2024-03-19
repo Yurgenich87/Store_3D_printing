@@ -11,7 +11,7 @@
       <form action="{% url 'login' %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Войти</button>
+        <button type="submit" class="blue">Войти</button>
       </form>
     {% else %}
       <p>Вы уже вошли в систему.</p>

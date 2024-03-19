@@ -5,28 +5,31 @@
 {% block content %}
 <section id="faq" class="faq section-bg">
     <div class="container">
-        <div class="section-title">
-            <h2>{{ title }}</h2>
-            <h4>
-                "Откройте для себя мир 3D-печати с нашими увлекательными статьями. Узнайте о последних технологических достижениях, применении в различных отраслях и получите полезные советы от экспертов."
-            </h4>
-        </div>
-        <div class="faq-list">
-            <ul>
-                {% for article in articles %}
-                <li data-aos="fade-up">
-                    <i class="bx bx-help-circle icon-help"></i>
-                    <a href="#faq-list-{{ forloop.counter }}" class="collapse collapsed" aria-expanded="false" data-bs-toggle="collapse">
-                        {{ article.title }}
-                        <i class="bx bx-chevron-down icon-show"></i>
-                        <i class="bx bx-chevron-up icon-close"></i>
-                    </a>
-                    <div id="faq-list-{{ forloop.counter }}" class="collapse" data-bs-parent=".faq-list">
-                        <p>{{ article.content | linebreaks }}</p>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
+                <div class="section-title">
+                    <h2>{{ title }}</h2>
+                    <h4>
+                        "Откройте для себя мир 3D-печати с нашими увлекательными статьями. Узнайте о последних технологических достижениях, применении в различных отраслях и получите полезные советы от экспертов."
+                    </h4>
+                </div>
+                <div class="faq-list">
+                    <ul>
+                        {% for article in articles %}
+                        <li data-aos="fade-up">
+                            <i class="bx bx-help-circle icon-help"></i>
+                            <a href="#faq-list-{{ forloop.counter }}" class="collapse collapsed" aria-expanded="false" data-bs-toggle="collapse">
+                                {{ article.title }}
+                                <i class="bx bx-chevron-down icon-show"></i>
+                                <i class="bx bx-chevron-up icon-close"></i>
+                            </a>
+                            <div id="faq-list-{{ forloop.counter }}" class="collapse" data-bs-parent=".faq-list">
+                                {% if article.content %}
+                                    {{ article.content | safe }}
+                                {% endif %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
         </div>
     </div>
 </section>

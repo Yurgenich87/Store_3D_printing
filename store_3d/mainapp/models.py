@@ -88,8 +88,6 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
-    def get_html_content(self):
-        return escape(self.content)
 
 
 class Cart(models.Model):
@@ -105,7 +103,6 @@ class CartItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
     description = models.CharField(max_length=100)
-
 
     def save(self, *args, **kwargs):
         # Заполняем поля name, description и price из связанной модели Product

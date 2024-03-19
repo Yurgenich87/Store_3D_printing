@@ -27,11 +27,9 @@ COMMON_CONTENT = settings.COMMON_CONTENT
 logger = logging.getLogger(__name__)
 
 
-def sass_page_handler(request):
-    return render(request,'mainapp/sass.html', COMMON_CONTENT)
-
-
+# ________________________________________________________General_____________________________________________________
 def login_view(request):
+    """Login page"""
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -60,6 +58,7 @@ def login_view(request):
 
 
 def logout_view(request):
+    """Output function"""
     logout(request)
     logger.info(f'Пользователь успешно вышел!')
     logger.debug("Главная страница успешно загружена!")
@@ -68,6 +67,7 @@ def logout_view(request):
 
 
 def register(request):
+    """Registration form"""
     form = UserForm()
     if request.method == 'POST':
         form = UserForm(request.POST)
@@ -152,11 +152,12 @@ def delete_profile(request, user=None):
     return render(request, 'mainapp/profile.html', content)
 
 
+# ________________________________________________________Menu_____________________________________________________
 def index(request):
+    """Main page"""
     if request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
-            logger.info(f' Валидация формы успешна')
             form.save()
 
             return redirect('index')
@@ -188,6 +189,7 @@ def gallery(request):
 
 
 def articles(request):
+
     articles = Article.objects.all()
     content = {
         'title': 'Статьи',
@@ -199,14 +201,12 @@ def articles(request):
 
 
 def create_article(request):
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        content = request.POST.get('content')
-        article = Article(title=title, content=content)
-        article.save()
-        return redirect('articles')
-
-    return render(request, 'mainapp/articles.html')
+    context = {
+        'title': 'Создание статьи',
+        **COMMON_CONTENT
+    }
+    logger.debug(f"Страница {context['title']} успешно загружена!")
+    return render(request, 'mainapp/create_article.html', context)
 
 
 def contact(request):
@@ -254,8 +254,6 @@ def store(request):
 
 
 # ________________________________________________________Product_____________________________________________________
-
-
 def manage_products(request):
     products = Product.objects.all()
     content = {
@@ -318,7 +316,7 @@ def product_list(request):
 
 
 def filter_products(request, days):
-    logger.debug(f'Фильтр: {request = } {days = }')
+    """Filter products in products """
     try:
         days = int(days)
     except ValueError:
@@ -334,9 +332,7 @@ def filter_products(request, days):
         'products': products,
         **COMMON_CONTENT
     }
-    logger.debug(f'products: {products = }')
-
-
+    logger.debug(f"Фильтр в продукции применен успешно!")
     return render(request, 'mainapp/manage_products.html', content)
 
 
@@ -351,7 +347,6 @@ def delete_product(request, product_id):
 
 
 # ________________________________________________________Orders_____________________________________________________
-
 def orders(request, pk=None):
     if pk:
         order = get_object_or_404(Order, pk=pk)
@@ -452,6 +447,7 @@ def delete_order(request, order_id):
 
 @login_required
 def filter_order(request, days):
+    """Filter products in orders"""
     logger.debug(f'Фильтр: {request = } {days = }')
     try:
         days = int(days)
@@ -460,26 +456,21 @@ def filter_order(request, days):
 
     start_date = timezone.now() - timezone.timedelta(days=days)
 
-    # Фильтрация заказов по пользователю и дате создания
     filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date)
 
     unique_products = set()
     unique_orders = []
     for order in filtered_orders:
-        # Проверяем, есть ли товар уже в списке уникальных товаров
         if order.product not in unique_products:
             unique_products.add(order.product)
-            # Добавляем заказ с уникальным товаром в список уникальных заказов
             unique_orders.append(order)
-
-    logger.debug(f'unique_orders: {unique_orders}')
 
     content = {
         'title': 'Фильтр заказов',
         'orders': unique_orders,
         **COMMON_CONTENT
     }
-
+    logger.debug(f"Фильтр в Ордерах применен успешно!")
     return render(request, 'mainapp/manage_orders.html', content)
 
 
@@ -552,20 +543,13 @@ def add_to_cart(request, product_id):
 def remove_from_cart(request, product_id):
     if request.method == 'POST':
         try:
-            # Получаем товар по его ID
             product = Product.objects.get(pk=product_id)
-
-            # Получаем корзину текущего пользователя
             cart, created = Cart.objects.get_or_create(user=request.user)
-
-            # Получаем запись о товаре в корзине, если она существует
             cart_item = CartItem.objects.filter(cart=cart, product=product).first()
 
             if cart_item:
-                # Уменьшаем количество товара на 1
                 cart_item.quantity -= 1
 
-                # Если количество стало нулевым или меньше, удаляем запись о товаре из корзины
                 if cart_item.quantity <= 0:
                     cart_item.delete()
                 else:
@@ -573,7 +557,6 @@ def remove_from_cart(request, product_id):
 
                 logger.debug(f"Товар {product.id} удален из корзины")
 
-                # Получаем текущее количество записей в корзине и отправляем его в ответе
                 cart_item_count = CartItem.objects.filter(cart=cart).count()
                 return JsonResponse({'success': True, 'cartItemCount': cart_item_count})
             else:
@@ -586,7 +569,7 @@ def remove_from_cart(request, product_id):
 
 
 def filter_products_in_cart(request, days):
-    logger.debug(f'Фильтр: {request = } {days = }')
+    """Filter the products in the shopping cart"""
     try:
         days = int(days)
     except ValueError:
