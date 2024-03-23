@@ -44,9 +44,10 @@ document.addEventListener('DOMContentLoaded', function() {
         navbarlink.classList.remove('active')
       }
     })
+
+    window.addEventListener('load', navbarlinksActive)
+    onscroll(document, navbarlinksActive)
   }
-  window.addEventListener('load', navbarlinksActive)
-  onscroll(document, navbarlinksActive)
 
   // Прокрутка к элементу с учетом высоты хедера
   const scrollto = (el) => {

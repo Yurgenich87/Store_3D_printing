@@ -5,70 +5,80 @@
 
 {% block content %}
 {% csrf_token %}
+
+<div id="update-success-message" style="display: none; position: fixed; top: 10%; left: 50%; transform: translate(-50%, -50%); background-color: #28a745; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000;" class="alert" role="alert"></div>
+
 <div class="section-title">
     <h2>{{ title }}</h2>
 </div>
 
+<div class="col">
+<div class="row justify-content-around align-items-center">
+        <div class="col-4 text-md-center">
+            <button type="submit" class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
+                <i class="ri-add-line align-bottom me-2 "></i>Добавить товар</button>
+        </div>
+        <div class="col-4 text-md-center">
+            <p id="productCount">Количество товаров: {{ products|length }}</p>
+        </div>
+        <div class="col-4 text-md-center">
+            <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                   placeholder="Введите количество дней" id="customDaysInput"
+                   data-bs-custom-class="custom-tooltip"
+                   data-bs-title="Отобразится список заказов за введенное количество дней">
+
+            <button type="button" class="blue" onclick="applyCustomDaysFilter('products')">Применить</button>
+            <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
+        </div>
+    </div>
+    <div class="table-responsive table-card mt-3 mb-1">
+        <table class="table align-middle table-nowrap table-striped" id="customerTable">
+            <thead class="table-light">
+            <tr>
+                <th class="sort" data-sort="id">ID</th>
+                <th class="sort" data-sort="name">Наименование</th>
+                <th class="sort" data-sort="price">Цена</th>
+                <th class="sort" data-sort="quantity">Кол-во</th>
+                <th class="sort" data-sort="description">Описание</th>
+                <th class="sort" data-sort="at_data">Дата добавления</th>
+                <th class="sort" data-sort="date"></th>
+            </tr>
+
+            </thead>
+            {% for product in products %}
+            <tbody class="list form-check-all">
+            <tr>
+                <td class="table">{{ product.id }}</td>
+                <td class="table">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" style="width: 50px; height: auto;">
+                    {% else %}
+                        <p>No image available</p>
+                    {% endif %}
+                    {{ product.name }}
+                </td>
+                <td class="table">{{ product.price }} руб.</td>
+                <td class="table">{{ product.quantity }} шт.</td>
+                <td class="table" >{{ product.description }}</td>
+                <td class="table">{{ product.at_data }}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="blue edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-product-id="{{ product.id }}">Редактировать</button>
+                    <div class="edit">
+                        </div>
+                        <div class="remove">
+                            <button type="submit" id="remove-item-btn" class="red" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-product-id="{{ product.id }}">Удалить</button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+    </div>
+</div>
 <div class="card">
     <div id="customerList">
-        <div class="row">
-                    <div class="row justify-content-around align-items-center">
-                        <div class="col-4 text-md-center">
-                            <button type="submit" class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
-                            <i class="ri-add-line align-bottom me-2 "></i>Добавить товар</button>
-                        </div>
-                        <div class="col-4 text-md-center">
-                            <p id="productCount">Количество товаров: {{ products|length }}</p>
-                        </div>
-                        <div class="col-4 text-md-center">
-                            <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
-                                   placeholder="Введите количество дней" id="customDaysInput"
-                                   data-bs-custom-class="custom-tooltip"
-                                   data-bs-title="Отобразится список заказов за введенное количество дней">
-
-                            <button type="button" class="blue" onclick="applyCustomDaysFilter('products')">Применить</button>
-                            <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
-                        </div>
-            </div>
-                <div class="table-responsive table-card mt-3 mb-1">
-                    <table class="table align-middle table-nowrap table-striped" id="customerTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="sort" data-sort="id">ID</th>
-                                <th class="sort" data-sort="name">Наименование</th>
-                                <th class="sort" data-sort="price">Цена</th>
-                                <th class="sort" data-sort="quantity">Кол-во</th>
-                                <th class="sort" data-sort="description">Описание</th>
-                                <th class="sort" data-sort="at_data">Дата добавления</th>
-                                <th class="sort" data-sort="date"></th>
-                            </tr>
-
-                        </thead>
-                        {% for product in products %}
-                            <tbody class="list form-check-all">
-                                <tr>
-                                    <td class="table">{{ product.id }}</td>
-                                    <td class="table">{{ product.name }}</td>
-                                    <td class="table">{{ product.price }} руб.</td>
-                                    <td class="table">{{ product.quantity }} шт.</td>
-                                    <td class="table">{{ product.description }}</td>
-                                    <td class="table">{{ product.at_data }}</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <div class="edit">
-                                                <button type="submit" class="blue edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-product-id="{{ product.id }}" onclick="editProduct({{ product.id }})">Редактировать</button>
-                                            </div>
-                                            <div class="remove">
-                                                <button type="submit" id="remove-item-btn" class="red" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-product-id="{{ product.id }}">Удалить</button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -86,6 +96,10 @@
                         <label for="id-field" class="form-label">ID</label>
                         <input type="text" id="id-field" class="form-control" placeholder="ID" readonly="">
                     </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Изображение</label>
+                            <input type="file" id="image" name="image" accept="image/*" class="form-control">
+                        </div>
                     <div class="mb-3">
                         <div class="input-group">
                             <span class="input-group-text" id="name-label">Наименование</span>
@@ -123,6 +137,7 @@
     </div>
 </div>
 
+
 <div class="modal fade zoomIn" id="deleteRecordModal" tabindex="-1" style="display: none;" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -139,11 +154,10 @@
                 </div>
                 <div class="d-flex gap-2 justify-content-center mt-4 mb-2">
                     <button type="submit" class="blue" data-bs-dismiss="modal">Закрыть</button>
-                    <button type="submit" class="red" id="delete-record">Да, удалить!</button>
+                    <button type="button" class="red" id="delete-record">Да, удалить!</button>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 </div>
 

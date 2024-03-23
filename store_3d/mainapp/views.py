@@ -3,33 +3,30 @@ import logging
 import os
 import random
 from datetime import timedelta, datetime
+from os.path import basename
 
-from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from django.db import transaction
-from django.db.models import F, Count
-from django.http import JsonResponse, HttpResponse
+from django.core.checks import messages
+from django.core.files.storage import FileSystemStorage, default_storage
+from django.core.mail import send_mail
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-
-from .models import User, Order, Product, Article, CartItem, Cart
-from .forms import UserForm, LoginForm, UserProfileForm, ProductForm, OrderForm
+from .models import Article, CartItem, Order, Cart, Product
+from .forms import UserForm, LoginForm, UserProfileForm, OrderForm, ProductForm, ImageForm
 
 logger = logging.getLogger(__name__)
 
 COMMON_CONTENT = settings.COMMON_CONTENT
 
-logger = logging.getLogger(__name__)
-
 
 # ________________________________________________________General_____________________________________________________
 def login_view(request):
-    """Login page"""
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -37,33 +34,23 @@ def login_view(request):
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             user = authenticate(request, email=email, password=password)
+            logger.debug(f"{user = }")
             if user is not None:
                 login(request, user)
-                logger.info(f'Пользователь с email: {email} успешно вошел!')
+                logger.info(f'Пользователь успешно вошел: {user.email}')
                 return redirect('index')
             else:
-                logger.error(
-                    f"Неудачная попытка входа для пользователя '{email}'. Неверное имя пользователя или пароль.")
-                return redirect('register')
+                logger.info(f'Неверная попытка входа с адресом электронной почты: {email}')
+                return redirect('login')
     else:
         form = LoginForm()
-
     content = {
         'form': form,
         'title': 'Вход',
         **COMMON_CONTENT
     }
-    logger.debug("Страница входа успешно загружена!")
+    logger.debug("Страница входа успешно загружена")
     return render(request, 'mainapp/login.html', content)
-
-
-def logout_view(request):
-    """Output function"""
-    logout(request)
-    logger.info(f'Пользователь успешно вышел!')
-    logger.debug("Главная страница успешно загружена!")
-
-    return redirect('index')
 
 
 def register(request):
@@ -90,24 +77,18 @@ def register(request):
     return render(request, 'mainapp/register.html', content)
 
 
+def logout_view(request):
+    logout(request)
+    logger.info('Пользователь успешно вышел из системы')
+    return redirect('index')
+
+
 @login_required
 def profile(request):
+    """"""
     user = request.user
     content = {
         'user': user,
-        'title': 'Страница профиля',
-        **COMMON_CONTENT
-    }
-
-    return render(request, 'mainapp/profile.html', content)
-
-
-@login_required
-def profile(request):
-    user = request.user
-    form = UserProfileForm(instance=user)
-    content = {
-        'form': form,
         'title': 'Страница профиля',
         **COMMON_CONTENT
     }
@@ -210,14 +191,6 @@ def create_article(request):
 
 
 def contact(request):
-    # if request.method == 'POST':
-    #     form = MyModelForm(request.POST)
-    #     if form.is_valid():
-    #         form.save()
-    #         return redirect('success_url')
-    # else:
-    #     form = MyModelForm()
-    logger.info(f"Index {COMMON_CONTENT['contact']} accessed")
     content = {
         'title': 'Контакты',
         **COMMON_CONTENT
@@ -225,6 +198,30 @@ def contact(request):
 
     logger.debug(f"Страница {content['title']} успешно загружена!")
     return render(request, 'mainapp/contact.html', content, )
+
+
+# Доработать
+@csrf_exempt
+def contact_form_submit(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        content = {
+            'title': 'Контакты',
+            **COMMON_CONTENT
+        }
+        logger.debug(f'Выполняется отправка сообщения пользователем c email: {email}')
+        send_mail(
+            subject,
+            message,
+            email,
+            ['store3dzepko'],
+            fail_silently=False,
+        )
+        logger.debug('Сообщение отправлено')
+        return JsonResponse({'success': True})
 
 
 def about(request):
@@ -256,6 +253,7 @@ def store(request):
 # ________________________________________________________Product_____________________________________________________
 def manage_products(request):
     products = Product.objects.all()
+
     content = {
         'title': 'Мои товары',
         'products': products,
@@ -266,21 +264,45 @@ def manage_products(request):
     return render(request, 'mainapp/manage_products.html', content)
 
 
+def upload_image(image):
+    """
+    Функция для загрузки изображения и возвращения пути к сохраненному изображению.
+    """
+    if image:
+        # Создаем путь к сохраненному изображению в каталоге product_images
+        image_name = image.name
+        image_path = os.path.join('img', 'product_images', image_name)
+
+        # Сохраняем изображение в указанном пути
+        with open(os.path.join('E:\\', 'PYTHON', 'Store_3d_printing', 'store_3d', 'static', image_path), 'wb') as f:
+            for chunk in image.chunks():
+                f.write(chunk)
+
+        return image_path
+    else:
+        return None
+
+
 @csrf_exempt
 def create_product(request):
     if request.method == 'POST':
         if request.headers.get('X-CSRFToken') != request.COOKIES.get('csrftoken'):
             return JsonResponse({'error': 'CSRF token mismatch'}, status=403)
 
-        data = json.loads(request.body)
-        name = data.get('name')
-        price = data.get('price')
-        quantity = data.get('quantity')
-        description = data.get('description')
+        product_form = ProductForm(request.POST)
 
-        product = Product.objects.create(name=name, price=price, quantity=quantity, description=description)
+        if product_form.is_valid():
+            product = product_form.save(commit=False)
+            product.save()
 
-        return JsonResponse({'success': 'Product created successfully'})
+            if 'image' in request.FILES:
+                image = request.FILES['image']
+                product.image.save(image.name, image)
+                product.save()
+
+            return JsonResponse({'success': 'Product created successfully'})
+        else:
+            return JsonResponse({'error': 'Invalid form data'}, status=400)
     else:
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
 
@@ -288,18 +310,27 @@ def create_product(request):
 def update_product(request, product_id):
     logger.info(f'Обновление данных продукта {product_id}')
     product = get_object_or_404(Product, pk=product_id)
-    if request.method == 'PUT':
-        # Получаем данные JSON из тела запроса
-        data = json.loads(request.body)
-        form = ProductForm(data, instance=product)
-        if form.is_valid():
-            form.save()
-            logger.info(f' Продукт {data["name"]} обновлен.')
+
+    if request.method == 'POST':
+        text_form = ProductForm(request.POST, instance=product)
+
+        if text_form.is_valid():
+            text_form.save()
+
+            # Проверяем, предоставлено ли новое изображение
+            if 'image' in request.FILES:
+                image = request.FILES['image']
+                product.image.save(image.name, image)
+                product.save()
+
+            logger.info(f'Продукт {product.name} успешно обновлен.')
             return JsonResponse({'message': 'Product updated successfully'}, status=200)
         else:
-            return JsonResponse({'error': form.errors}, status=400)
+            errors = text_form.errors
+            return JsonResponse({'error': errors}, status=400)
+
     else:
-        return JsonResponse({'error': 'PUT request expected'}, status=405)
+        return JsonResponse({'error': 'POST request expected'}, status=405)
 
 
 def product_list(request):
@@ -310,8 +341,7 @@ def product_list(request):
         'description': product.description,
         'price': product.price,
         'quantity': product.quantity,
-    }
-        for product in products]
+    } for product in products]
     return JsonResponse(data, safe=False)
 
 

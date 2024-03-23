@@ -14,7 +14,7 @@
 }
 
 body {
-  background-image: url('/store_3d/static/media/img.png');
+  background-image: url('/store_3d/static/img/img.png');
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -93,6 +93,7 @@ button[type=submit] {
   transition: 0.4s;
   border-radius: 25px;
   vertical-align: middle;
+
 }
 
 button[type=submit]:hover {
@@ -103,7 +104,6 @@ button[type=submit]:hover {
 button.blue {
   background: #1977cc;
   color: #fff;
-
 }
 
 button.blue:hover {
@@ -186,6 +186,33 @@ a.btn-primary:hover {
   /* Изменение цвета текста */
   color: #333;
 }
+
+#update-success-message {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #28a745;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+    z-index: 1000;
+    width: 100%;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
 /*--------------------------------------------------------------
 # Back to top button
 --------------------------------------------------------------*/

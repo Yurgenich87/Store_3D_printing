@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="section-title">
+    <h2>{{ title }}</h2>
+</div>
+
+<h2>Загрузите изображение</h2>
+<form method="post" enctype="multipart/form-data">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit">Загрузить</button>
+</form>
+
+
+{% endblock %}

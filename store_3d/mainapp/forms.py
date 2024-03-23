@@ -60,8 +60,11 @@ class ProductForm(forms.ModelForm):
             'price': forms.NumberInput(attrs={'placeholder': 'Цена'}),
             'quantity': forms.NumberInput(attrs={'placeholder': 'Кол-во'}),
             'description': forms.TextInput(attrs={'placeholder': 'Описание'}),
-
         }
+
+
+class ImageForm(forms.Form):
+    image = forms.ImageField()
 
 
 class OrderForm(forms.ModelForm):
@@ -69,4 +72,3 @@ class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ['user', 'product', 'quantity']
-

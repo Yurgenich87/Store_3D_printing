@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+from django.views.generic import RedirectView
 
 from .views import index, about, contact, register, gallery, login_view, \
     logout_view, profile, edit_profile, delete_profile, manage_products, update_order, delete_order, \
     create_order, orders, manage_orders, update_product, delete_product, articles, product_list, create_product, \
     filter_products, add_to_cart, remove_from_cart, view_cart, store, filter_products_in_cart, randomize_order_dates, \
-    filter_order, create_article
+    filter_order, create_article, contact_form_submit, upload_image
 
 urlpatterns = [
     path('', index, name='index'),
@@ -15,6 +16,8 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('about/', about, name='about'),
     path('contact/', contact, name='contact'),
+    path('contact_form_submit/', contact_form_submit, name='contact_form_submit'),
+
     path('gallery/', gallery, name='gallery'),
     path('articles/', articles, name='articles'),
     path('create_article/', create_article, name='create_article'),
@@ -24,6 +27,7 @@ urlpatterns = [
     path('delete_profile/', delete_profile, name='delete_profile'),
 
     path('products/', manage_products, name='manage_products'),
+    path('upload/', upload_image, name='upload_image'),
     path('products_list/', product_list, name='product_list'),
     path('update_product/<int:product_id>/', update_product, name='update_product'),
     path('create_product/', create_product, name='create_product'),
@@ -43,10 +47,11 @@ urlpatterns = [
     path('filter_products_in_cart/<int:days>/', filter_products_in_cart, name='filter_products_in_cart'),
     path('store/', store, name='store'),
 
+    path('', RedirectView.as_view(url='/media/', permanent=True)),
 ]
-
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
 

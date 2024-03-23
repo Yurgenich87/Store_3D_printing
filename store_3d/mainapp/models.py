@@ -2,7 +2,12 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.db import models
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.test import TestCase, Client
+from django.urls import reverse
 from django.utils.html import escape
+
+from django.contrib.auth.models import BaseUserManager
+
 
 class UserManager(BaseUserManager):
     """Manager for user model"""
@@ -68,7 +73,11 @@ class Product(models.Model):
     description = models.CharField(max_length=100)
     price = models.IntegerField()
     quantity = models.IntegerField()
-    at_data = models.DateTimeField()
+    image = models.ImageField(upload_to='product_images/')
+    at_data = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Order(models.Model):
@@ -77,7 +86,7 @@ class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     sum_orders = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
-    at_data = models.DateTimeField()
+    at_data = models.DateTimeField(auto_now_add=True)
 
 
 class Article(models.Model):
@@ -87,7 +96,6 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
-
 
 
 class Cart(models.Model):
@@ -111,4 +119,11 @@ class CartItem(models.Model):
         self.price = self.product.price
         super().save(*args, **kwargs)
 
+
+class Image(models.Model):
+    title = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='img')
+
+    def __str__(self):
+        return self.title
 
