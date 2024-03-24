@@ -44,12 +44,8 @@
             <div class="col-6 col-md-3">
                 <a class="contact-info">
                     {% if user.is_authenticated %}
-                        <span><a href="{% url 'profile' %}">{{ user.username }}</a></span>
-                        <a href="{% url 'logout' %}" class="link-danger ">Выйти, </a>
-                    <a href="{% url 'cart' %}">
-                        корзина:
-                        <i class="las la-cart-arrow-down la-2x link-success"></i>
-                    </a>
+                        <span><a href="{% url 'profile' %}"><i class="las la-id-card"></i>{{ user.username }}</a></span>
+                        <a href="{% url 'logout' %}" class="link-danger ">Выйти</a>
                     {% else %}
                         <a href="{% url 'login' %}">Вы не вошли в систему. Войти</a>
                     {% endif %}
@@ -84,19 +80,33 @@
             </div>
         </div>
         <div class="row justify-content-end">
-            <div class="col-12">
-                <section class="breadcrumbs">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <ol>
-                            {% if title == 'Главная' %}
-                            <li><a href="{% url 'index' %}">{{ title }}</a></li>
-                            {% else %}
-                            <li><a href="{% url 'index' %}">{{ main }}</a></li>
-                            <li> {{ title }}</li>
-                            {% endif %}
-                            </ol>
+            <div class="row">
+                  <div class="row">
+                    <div class="col">
+                        <section class="breadcrumbs">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <ol>
+                                    {% if title == 'Главная' %}
+                                    <li><a href="{% url 'index' %}">{{ title }}</a></li>
+                                    {% else %}
+                                    <li><a href="{% url 'index' %}">{{ main }}</a></li>
+                                    <li> {{ title }}</li>
+                                    {% endif %}
+
+                                    </ol>
+                                </div>
+                        </section>
+                    </div>
+                    <div class="col"></div>
+                        {% if request.path == '/store/' %}
+                        <div class="col">
+                            <a href="{% url 'cart' %}">
+                                Сумма: {{ cart_sum.total_price }} руб.
+                                <i class="las la-shopping-cart la-2x link-success"></i>
+                            </a>
                         </div>
-                </section>
+                        {% endif %}
+                  </div>
             </div>
         </div>
     </div>

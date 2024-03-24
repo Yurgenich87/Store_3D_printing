@@ -89,6 +89,7 @@ function updateData(productId, updatedData) {
         });
 }
 
+
 function deleteProduct(productId) {
     const csrftoken = getCookie('csrftoken');
 
@@ -149,6 +150,43 @@ function showNotification(message) {
     // Возвращаем обещание
     return reloadPromise;
 }
+
+function showToast(message, duration = 4000) {
+    const toast = document.createElement('div');
+    toast.classList.add('toast');
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+
+    const toastHeader = document.createElement('div');
+    toastHeader.classList.add('toast-header');
+
+    const toastBody = document.createElement('div');
+    toastBody.classList.add('toast-body');
+    toastBody.textContent = message;
+
+    toast.appendChild(toastHeader);
+    toast.appendChild(toastBody);
+
+    document.querySelector('.toast-container').appendChild(toast);
+
+    const bootstrapToast = new bootstrap.Toast(toast);
+    bootstrapToast.show();
+
+    setTimeout(() => {
+        toast.remove(); // Удаляем уведомление из DOM
+    }, duration);
+
+
+}
+// function updateRemoveButton(productId, quantity) {
+//     const removeButtons = document.querySelectorAll('.remove-from-cart-btn');
+//     removeButtons.forEach(button => {
+//         if (button.getAttribute('data-product-id') === productId) {
+//             button.textContent = `Удалить из корзины: ${quantity} шт.`;
+//         }
+//     });
+// }
 
 
 function updateTableData(days) {
@@ -273,6 +311,7 @@ function updateCartItemCount(count) {
     }
 }
 
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -287,6 +326,34 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+// Находим все кнопки увеличения и уменьшения количества товара
+const increaseButtons = document.querySelectorAll('.SnowShoppingcartProductList_ProductNumAction__button__eac55:first-child');
+const decreaseButtons = document.querySelectorAll('.SnowShoppingcartProductList_ProductNumAction__button__eac55:last-child');
+
+// Добавляем обработчики событий для кнопок увеличения и уменьшения количества товара
+increaseButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Находим элемент с количеством товара
+        const quantityElement = this.parentElement.querySelector('.SnowShoppingcartProductList_ProductNumAction__quantity__eac55');
+        // Увеличиваем количество товара на 1
+        const newQuantity = parseInt(quantityElement.textContent) + 1;
+        // Обновляем количество товара на странице
+        quantityElement.textContent = newQuantity;
+    });
+});
+
+decreaseButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Находим элемент с количеством товара
+        const quantityElement = this.parentElement.querySelector('.SnowShoppingcartProductList_ProductNumAction__quantity__eac55');
+        // Уменьшаем количество товара на 1, но не меньше 1
+        const newQuantity = Math.max(parseInt(quantityElement.textContent) - 1, 1);
+        // Обновляем количество товара на странице
+        quantityElement.textContent = newQuantity;
+    });
+});
+
 
 
 const csrfToken = "{{ csrf_token }}";
@@ -420,6 +487,19 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
+    // Функция для очистки полей модального окна при его скрытии
+    document.getElementById("showModal").addEventListener("hidden.bs.modal", function() {
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("quantity").value = "";
+        document.getElementById("description").value = "";
+
+        // Сбрасываем текущий productId
+        currentProductId = null;
+    });
+
+});
+
 
 // Обработка нажатия на кнопку "Добавить в корзину"
     document.querySelectorAll('.add-to-cart-btn').forEach(button => {
@@ -455,56 +535,47 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
 
-    // Обработка нажатия на кнопку "Удалить из корзины"
-    document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = this.getAttribute('data-product-id');
-            const csrftoken = getCookie('csrftoken');
+// Обработка нажатия на кнопку "Удалить из корзины"
+document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const productId = this.getAttribute('data-product-id');
+        const csrftoken = getCookie('csrftoken');
 
-            // AJAX запрос на удаление товара из корзины
-            fetch(`/remove_from_cart/${productId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Обновление содержимого корзины на основе данных из ответа
-                if (data.success) {
-                    // Успешно удалено, обновляем отображение корзины
-                const cartItemCountElement = document.getElementById('cartItemCount');
-                if (cartItemCountElement) {
-                    cartItemCountElement.textContent = data.cartItemCount;
-                }
-                location.reload();
+        // AJAX запрос на удаление товара из корзины
+        fetch(`/remove_from_cart/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Обновление содержимого корзины на основе данных из ответа
+            if (data.success) {
+                // Успешно удалено, обновляем отображение корзины
+            const cartItemCountElement = document.getElementById('cartItemCount');
+            if (cartItemCountElement) {
+                cartItemCountElement.textContent = data.cartItemCount;
+            }
+            location.reload();
 
-                    // Дополнительно можно обновить другие части страницы, отображающие содержимое корзины
-                } else {
-                    // Возникла ошибка при удалении товара из корзины, обработаем её
-                    console.error(data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка при выполнении AJAX запроса:', error);
-            });
+                // Дополнительно можно обновить другие части страницы, отображающие содержимое корзины
+            } else {
+                // Возникла ошибка при удалении товара из корзины, обработаем её
+                console.error(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при выполнении AJAX запроса:', error);
         });
     });
-
-
-    // Функция для очистки полей модального окна при его скрытии
-    document.getElementById("showModal").addEventListener("hidden.bs.modal", function() {
-        document.getElementById("name").value = "";
-        document.getElementById("price").value = "";
-        document.getElementById("quantity").value = "";
-        document.getElementById("description").value = "";
-
-        // Сбрасываем текущий productId
-        currentProductId = null;
-    });
-
-
 });
+
+
+
+
+
+
 
 

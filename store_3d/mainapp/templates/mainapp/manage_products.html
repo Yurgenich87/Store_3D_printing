@@ -16,7 +16,7 @@
 <div class="row justify-content-around align-items-center">
         <div class="col-4 text-md-center">
             <button type="submit" class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
-                <i class="ri-add-line align-bottom me-2 "></i>Добавить товар</button>
+                <i class="las la-plus"></i>Добавить товар</button>
         </div>
         <div class="col-4 text-md-center">
             <p id="productCount">Количество товаров: {{ products|length }}</p>
@@ -48,7 +48,7 @@
             {% for product in products %}
             <tbody class="list form-check-all">
             <tr>
-                <td class="table">{{ product.id }}</td>
+                <td class="table" data-sort="id">{{ product.id }}</td>
                 <td class="table">
                     {% if product.image %}
                         <img src="{{ product.image.url }}" style="width: 50px; height: auto;">
@@ -63,11 +63,11 @@
                 <td class="table">{{ product.at_data }}</td>
                 <td>
                     <div class="d-flex gap-2">
-                        <button type="submit" class="blue edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-product-id="{{ product.id }}">Редактировать</button>
+                        <i type="submit" class="las la-edit la-2x edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-product-id="{{ product.id }}"></i>
                     <div class="edit">
                         </div>
                         <div class="remove">
-                            <button type="submit" id="remove-item-btn" class="red" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-product-id="{{ product.id }}">Удалить</button>
+                            <i type="submit" id="remove-item-btn" class="las la-trash la-2x" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-product-id="{{ product.id }}"></i>
                         </div>
                     </div>
                 </td>

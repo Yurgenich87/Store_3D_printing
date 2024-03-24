@@ -238,8 +238,10 @@ def about(request):
 def store(request):
     user = request.user
     products = Product.objects.all()
+    cart_sum = Cart.objects.filter(user=user).first()
     cart_products = CartItem.objects.filter(cart__user=user)
     context = {
+        'cart_sum': cart_sum,
         'products': products,
         'cart_products': cart_products,
         'title': 'Магазин',
@@ -262,25 +264,6 @@ def manage_products(request):
 
     logger.debug(f"Страница {content['title']} успешно загружена!")
     return render(request, 'mainapp/manage_products.html', content)
-
-
-def upload_image(image):
-    """
-    Функция для загрузки изображения и возвращения пути к сохраненному изображению.
-    """
-    if image:
-        # Создаем путь к сохраненному изображению в каталоге product_images
-        image_name = image.name
-        image_path = os.path.join('img', 'product_images', image_name)
-
-        # Сохраняем изображение в указанном пути
-        with open(os.path.join('E:\\', 'PYTHON', 'Store_3d_printing', 'store_3d', 'static', image_path), 'wb') as f:
-            for chunk in image.chunks():
-                f.write(chunk)
-
-        return image_path
-    else:
-        return None
 
 
 @csrf_exempt
@@ -317,7 +300,6 @@ def update_product(request, product_id):
         if text_form.is_valid():
             text_form.save()
 
-            # Проверяем, предоставлено ли новое изображение
             if 'image' in request.FILES:
                 image = request.FILES['image']
                 product.image.save(image.name, image)
@@ -455,8 +437,7 @@ def update_order(request, order_id):
     context = {
         'form': form,
         'title': 'Редактирование заказа',
-        'order': order,  # Передаем объект заказа в контекст
-        **COMMON_CONTENT
+        'order': order,
     }
 
     return render(request, 'mainapp/update_order.html', context)
@@ -519,8 +500,8 @@ def manage_orders(request):
 @login_required
 def view_cart(request):
     user = request.user
-    cartitems = CartItem.objects.filter(cart__user=user) # Получаем товары в корзине пользователя
-    total_price = sum(item.product.price * item.quantity for item in cartitems)  # Вычисляем общую стоимость товаров в корзине
+    cartitems = CartItem.objects.filter(cart__user=user)
+    total_price = sum(item.product.price * item.quantity for item in cartitems)
     context = {
         'cartitems': cartitems,
         'total_price': total_price,
@@ -540,20 +521,16 @@ def add_to_cart(request, product_id):
             quantity = 1  # Устанавливаем количество товара равным 1
             sum_orders = product.price * quantity
 
-            # Получаем или создаем корзину пользователя
             cart, created = Cart.objects.get_or_create(user=request.user)
 
-            # Получаем или создаем запись о товаре в корзине
             cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
-            # Если запись уже существует, увеличиваем количество товара
             if not created:
                 cart_item.quantity += quantity
                 cart_item.save()
                 cart.total_price += sum_orders
                 cart.save()
             else:
-                # Создаем заказ для добавления товара в корзину только при создании новой записи о товаре в корзине
                 order = Order(user=request.user, product=product, quantity=quantity,
                               sum_orders=sum_orders, at_data=timezone.now())
                 order.save()

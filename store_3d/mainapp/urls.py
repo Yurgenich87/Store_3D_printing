@@ -7,7 +7,7 @@ from .views import index, about, contact, register, gallery, login_view, \
     logout_view, profile, edit_profile, delete_profile, manage_products, update_order, delete_order, \
     create_order, orders, manage_orders, update_product, delete_product, articles, product_list, create_product, \
     filter_products, add_to_cart, remove_from_cart, view_cart, store, filter_products_in_cart, randomize_order_dates, \
-    filter_order, create_article, contact_form_submit, upload_image
+    filter_order, create_article, contact_form_submit
 
 urlpatterns = [
     path('', index, name='index'),
@@ -27,7 +27,6 @@ urlpatterns = [
     path('delete_profile/', delete_profile, name='delete_profile'),
 
     path('products/', manage_products, name='manage_products'),
-    path('upload/', upload_image, name='upload_image'),
     path('products_list/', product_list, name='product_list'),
     path('update_product/<int:product_id>/', update_product, name='update_product'),
     path('create_product/', create_product, name='create_product'),

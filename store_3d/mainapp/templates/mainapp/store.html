@@ -27,12 +27,16 @@
                     <p class="text-info-emphasis">{{ product.price }} руб.</p>
                     <p class="card-text">Наличие: {{ product.quantity }} шт.</p>
                     <p class="card-text border-bottom">Описание: {{ product.description }}</p>
-                    <button type="button" class="blue add-to-cart-btn" data-product-id="{{ product.id }}">Добавить в корзину</button>
-                    {% for cart_product in cart_products %}
-                        {% if cart_product.product_id == product.id %}
-                            <button type="button" class="red remove-from-cart-btn" data-product-id="{{ product.id }}">Удалить из корзины: {{ cart_product.quantity }} шт.</button>
-                        {% endif %}
-                    {% endfor %}
+                    <div type="button" class="d-flex justify-content-center align-items-center">
+                        {% for cart_product in cart_products %}
+                            {% if cart_product.product_id == product.id %}
+                                <i class="las la-minus la-2x remove-from-cart-btn" data-product-id="{{ product.id }}"></i>
+                                <span class="mx-2">{{ cart_product.quantity }} шт.</span>
+                            {% endif %}
+                        {% endfor %}
+                        <i class="las la-plus la-2x add-to-cart-btn" data-product-id="{{ product.id }}"></i>
+                        <i class="las la-cart-arrow-down la-3x"></i>
+                    </div>
                 </div>
             </div>
         </div>
