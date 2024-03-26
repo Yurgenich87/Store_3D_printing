@@ -3,83 +3,115 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+<div class="toast-container"></div>
+
+<div id="update-success-message" style="display: none; position: fixed; top: 10%; left: 50%; transform: translate(-50%, -50%); background-color: #28a745; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000;" class="alert" role="alert"></div>
+
 <div class="section-title">
     <h2>{{ title }}</h2>
 </div>
 
 <div class="container text-center">
-  <div class="row">
-    <div class="col-6 col-md-4">
-        <button type="submit" class="blue">Создать новый заказ</button>
-    </div>
-    <div class="col-6 col-md-4">
-        <h3>Всего заказов: {{ orders|length }}</h3>
-    </div>
-    <div class="col-6 col-md-4">
-        <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
-               placeholder="Введите количество дней" id="customDaysInput"
-               data-bs-custom-class="custom-tooltip"
-               data-bs-title="Отобрадится список заказов за введенное количество дней">
-        <button type="button" class="blue" onclick="applyCustomDaysFilter('order')">Применить</button>
-        <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
+    <div class="row">
+        <div class="col-6 col-md-4">
 
+        </div>
+        <div class="col-6 col-md-4">
+            <p id="productCount" class="border-bottom">Всего заказов: {{orders|length}} шт.</p>
+        </div>
+        <div class="col-6 col-md-4">
+            <label for="customDaysInput"></label><input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        placeholder="Введите количество дней" id="customDaysInput"
+                                                        data-bs-custom-class="custom-tooltip"
+                                                        data-bs-title="Отобразится список заказов за введенное количество дней">
+            <button type="button" class="blue" onclick="applyCustomDaysFilter('order')">Применить</button>
+            <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
+        </div>
     </div>
-  </div>
 </div>
 <div class="container overflow-hidden text-center">
     <div class="row gy-5 border-bottom">
-      <div class="col-6">
+        <div class="col-6">
         <form action="{% url 'create_order' %}" method="post">
         {% csrf_token %}
         {{ order_form.as_p }}
-      </form>
+        </form>
+        </div>
     </div>
-  </div>
+    <div class="container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Пользователь</th>
+                        <th>Наименование товара</th>
+                        <th>Сумма</th>
+                        <th>Дата</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.user.username }}<br> (id={{ order.user_id }})</td>
+                        <td>{{ order.product.name }}</td>
+                        <td>{{ order.product.price }} руб.</td>
+                        <td>{{ order.at_data }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <i type="submit" id="edit-order" class="las la-edit la-2x btn edit-order" data-bs-toggle="modal" data-bs-target="#showOrderModal" data-order-id="{{ order.id }}"></i>
+                                <div class="remove">
+                                    <form action="{% url 'delete_order' order.id %}" method="post" class="action-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="las la-trash la-2x btn"></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-       <!-- Список заказов и кнопки для их редактирования и удаления -->
-        <div class="container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Пользователь</th>
-                            <th>Наименование товара</th>
-                            <th>Кол-во</th>
-                            <th>Сумма</th>
-                            <th>Дата</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in orders %}
-                        <tr>
-                            <td>{{ order.id }}</td>
-                            <td>{{ order.user.username }}</td>
-                            <td>{{ order.product.name }}</td>
-                            <td>{{ order.quantity }}</td>
-                            <td>{{ order.sum_orders }}</td>
-                            <td>{{ order.at_data }}</td>
-                            <td>
-                                <form action="{% url 'update_order' order.id %}" method="post" class="action-form">
-                                    {% csrf_token %}
-                                    {{ order_form.as_p }}
-                                    <button type="submit" class="blue">Редактировать</button>
-                                </form>
-                                <form action="{% url 'delete_order' order.id %}" method="post" class="action-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="red">Удалить</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<div class="modal fade" id="showOrderModal" tabindex="-1" aria-labelledby="showOrderModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="orderModalLabel">Редактирование заказа</h1>
+                    <button type="button" class="btn-close" style="position: absolute; top: 10px; right: 0;" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3" id="modal-id" style="display: none;">
+                        <label for="id-field" class="form-label">ID</label>
+                        <input type="text" id="id-field" class="form-control" placeholder="ID" readonly="">
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <label class="input-group-text" for="user_id">Пользователь</label>
+                            <select class="form-select" id="user_id" aria-describedby="user_id-label" required="">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <label class="input-group-text" for="product_id">Наименование товара</label>
+                            <select class="form-select" id="product_id" aria-describedby="product_id-label" required="">
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer d-flex justify-content-end">
+                    <button type="button" class="blue edit-order-btn" id="edit-order-btn">Сохранить изменения</button>
+                </div>
             </div>
         </div>
-
-      </div>
     </div>
-  </div>
-</section>
+</div>
+
 
 {% endblock %}

@@ -1,31 +1,59 @@
-function createProduct(productData) {
-    // Получаем CSRF-токен из cookie
-    const csrftoken = getCookie('csrftoken');
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+let currentProductId = null;
+let currentOrderId = null;
+var datepicker = new Datepicker('#datepicker');
 
-    // Создаем новый объект FormData
+
+function updateProfile(userId, formData) {
+    fetch(`/edit_profile/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        body: formData
+    })
+    .then(function (response) {
+        return response.json();  // Преобразуем ответ в JSON
+    })
+    .then(function (data) {
+        if (data.success) {
+            // showNotification('Profile updated successfully');
+            console.info('Profile updated successfully');
+            // Перезагрузить текущую страницу
+        } else {
+            console.error('Failed to update profile');
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+}
+
+function createProduct(productData) {
+   const csrftoken = getCookie('csrftoken');
+
     const formData = new FormData();
 
-    // Добавляем текстовые данные в FormData
     formData.append('name', productData.name);
     formData.append('price', productData.price);
     formData.append('quantity', productData.quantity);
     formData.append('description', productData.description);
+    formData.append('category', productData.category);
 
-    // Если изображение было выбрано, добавляем его в FormData
+
     if (productData.image) {
         formData.append('image', productData.image);
     }
 
-    // Опции для запроса
     const requestOptions = {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrftoken
         },
-        body: formData // Используем FormData в качестве тела запроса
+        body: formData
     };
 
-    // Отправляем POST-запрос на создание продукта
+
     fetch('/create_product/', requestOptions)
         .then(response => {
             if (!response.ok) {
@@ -37,7 +65,6 @@ function createProduct(productData) {
                 console.log('Продукт успешно создан:', data);
                 $('#showModal').modal('hide'); // Скрыть модальное окно
 
-                // Показать уведомление об успешном создании продукта
                 showNotification('Продукт успешно создан.');
             })
         .catch(error => {
@@ -46,30 +73,27 @@ function createProduct(productData) {
 }
 
 function updateData(productId, updatedData) {
-    // Получаем CSRF-токен из cookie
     const csrftoken = getCookie('csrftoken');
 
-    // Создаем новый объект FormData
     const formData = new FormData();
 
-    // Добавляем текстовые данные в FormData
     formData.append('name', updatedData.name);
     formData.append('price', updatedData.price);
     formData.append('quantity', updatedData.quantity);
     formData.append('description', updatedData.description);
+    formData.append('category', updatedData.category);
 
-    // Если изображение было выбрано, добавляем его в FormData
+
     if (updatedData.image) {
         formData.append('image', updatedData.image);
     }
 
-    // Опции для запроса
     const requestOptions = {
         method: 'POST',
         headers: {
             'X-CSRFToken': csrftoken
         },
-        body: formData // Используем FormData в качестве тела запроса
+        body: formData
     };
 
     fetch(`/update_product/${productId}/`, requestOptions)
@@ -90,10 +114,25 @@ function updateData(productId, updatedData) {
 }
 
 
+function filterProducts(days) {
+    fetch(`/filter_products/${days}/`)
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+
+            }
+            throw new Error('Ошибка при получении данных');
+        })
+        .then(html => {
+            document.querySelector('body').innerHTML = html;
+            console.info('days:', days);
+        })
+        .catch(error => console.error('Ошибка при фильтрации товаров:', error));
+}
+
 function deleteProduct(productId) {
     const csrftoken = getCookie('csrftoken');
 
-    // Опции для запроса
     const requestOptions = {
         method: 'POST',
         headers: {
@@ -115,142 +154,32 @@ function deleteProduct(productId) {
         });
 }
 
-function showNotification(message) {
-    console.log('showNotification:', message);
+function updateOrder(orderId, updatedOrderData) {
+    const csrftoken = getCookie('csrftoken');
+    const formOrder = new FormData();
 
-    // Создаем элемент для сообщения
-    let notificationElement = document.createElement('div');
-    notificationElement.textContent = message;
+    formOrder.append('user', updatedOrderData.user);
+    formOrder.append('product', updatedOrderData.product);
 
-    // Находим элемент для отображения уведомления
-    let updateSuccessMessage = document.getElementById('update-success-message');
+    fetch(`/update_order/${orderId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken
+        },
+        body: formOrder
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update order');
+        }
+        showNotification('Заказ изменен успешно');
+        $('#showOrderModal').modal('hide');
 
-    // Добавляем сообщение внутрь элемента "update-success-message"
-    updateSuccessMessage.innerHTML = ''; // Очищаем содержимое, если уже что-то было
-    updateSuccessMessage.appendChild(notificationElement);
-
-    console.log('showNotification start: ', notificationElement);
-
-    // Показываем элемент с уведомлением
-    updateSuccessMessage.style.display = 'block';
-
-    // Скрываем сообщение через некоторое время
-    setTimeout(function() {
-        notificationElement.remove(); // Удаляем элемент из DOM
-        updateSuccessMessage.style.display = 'none'; // Скрываем элемент с уведомлением
-    }, 4000); // 3000 миллисекунд (3 секунды)
-
-    // Создаем обещание для обновления страницы через 3 секунды
-    const reloadPromise = new Promise(resolve => {
-        setTimeout(() => {
-            resolve(location.reload());
-        }, 1000);
+        console.log('Order updated successfully');
+    })
+    .catch(error => {
+        console.error('Error updating order:', error);
     });
-
-    // Возвращаем обещание
-    return reloadPromise;
-}
-
-function showToast(message, duration = 4000) {
-    const toast = document.createElement('div');
-    toast.classList.add('toast');
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-
-    const toastHeader = document.createElement('div');
-    toastHeader.classList.add('toast-header');
-
-    const toastBody = document.createElement('div');
-    toastBody.classList.add('toast-body');
-    toastBody.textContent = message;
-
-    toast.appendChild(toastHeader);
-    toast.appendChild(toastBody);
-
-    document.querySelector('.toast-container').appendChild(toast);
-
-    const bootstrapToast = new bootstrap.Toast(toast);
-    bootstrapToast.show();
-
-    setTimeout(() => {
-        toast.remove(); // Удаляем уведомление из DOM
-    }, duration);
-
-
-}
-// function updateRemoveButton(productId, quantity) {
-//     const removeButtons = document.querySelectorAll('.remove-from-cart-btn');
-//     removeButtons.forEach(button => {
-//         if (button.getAttribute('data-product-id') === productId) {
-//             button.textContent = `Удалить из корзины: ${quantity} шт.`;
-//         }
-//     });
-// }
-
-
-function updateTableData(days) {
-    filterProducts(days);
-}
-
-function displayFilteredData(filteredData) {
-    var tableBody = document.getElementById('customerTable').getElementsByTagName('tbody')[0];
-    tableBody.innerHTML = '';
-
-    filteredData.forEach(function(product) {
-        var newRow = tableBody.insertRow();
-        newRow.innerHTML = `
-            <td class="id">${product.id}</td>
-            <td class="name">${product.name}</td>
-            <td class="price">${product.price}</td>
-            <td class="quantity">${product.quantity}</td>
-            <td class="description">${product.description}</td>
-            <td class="at_data">${product.at_data}</td>
-            <td>
-                <div class="d-flex gap-2">
-                    <div class="edit">
-                        <button type="button" class="blue edit-item-btn" data-bs-toggle="modal" data-bs-target="#showModal" data-product-id="${product.id}" onclick="editProduct(${product.id})">Редактировать</button>
-                    </div>
-                    <div class="remove">
-                        <button type="button" class="red remove-item-btn" data-bs-toggle="modal" data-bs-target="#deleteRecordModal" data-product-id="${product.id}">Удалить</button>
-                    </div>
-                </div>
-            </td>
-        `;
-    });
-}
-
-function filterProducts(days) {
-    fetch(`/filter_products/${days}/`)
-        .then(response => {
-            if (response.ok) {
-                return response.text();
-                console.error('days:', days);
-
-            }
-            throw new Error('Ошибка при получении данных');
-        })
-        .then(html => {
-            // Обновить содержимое страницы с отфильтрованным списком товаров
-            document.querySelector('body').innerHTML = html;
-            console.info('days:', days);
-        })
-        .catch(error => console.error('Ошибка при фильтрации товаров:', error));
-}
-
-function filterProductsInCart(days) {
-    fetch(`/filter_products_in_cart/${days}/`)
-        .then(response => {
-            if (response.ok) {
-                return response.text();
-            }
-            throw new Error('Ошибка при получении данных');
-        })
-        .then(html => {
-            // Обновить содержимое страницы с отфильтрованным списком товаров в корзине
-            document.querySelector('body').innerHTML = html;
-        })
-        .catch(error => console.error('Ошибка при фильтрации товаров в корзине:', error));
 }
 
 function filterOrders(days) {
@@ -262,16 +191,69 @@ function filterOrders(days) {
             throw new Error('Ошибка при получении данных');
         })
         .then(html => {
-            // Обновить содержимое страницы с отфильтрованным списком заказов
             document.querySelector('body').innerHTML = html;
         })
         .catch(error => console.error('Ошибка при фильтрации заказов:', error));
 }
 
-function resetFilter() {
-    // Сбросить фильтр, например, перезагрузить страницу
-    window.location.reload();
+function deleteOrder(orderId) {
+    fetch(`/delete_order/${orderId}/`, {
+        method: 'POST',
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete order');
+        }
+        showNotification('Заказ удален успешно');
+        console.log('Order deleted successfully');
+    })
+    .catch(error => {
+        console.error('Error deleting order:', error);
+    });
 }
+
+function filterProductsInCart(days) {
+    fetch(`/filter_products_in_cart/${days}/`)
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            }
+            throw new Error('Ошибка при получении данных');
+        })
+        .then(html => {
+            document.querySelector('body').innerHTML = html;
+        })
+        .catch(error => console.error('Ошибка при фильтрации товаров в корзине:', error));
+}
+
+function deleteProductFromCart(productId) {
+    const csrftoken = getCookie('csrftoken');
+
+    fetch(`/remove_from_cart/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+            const cartItemCountElement = document.getElementById('cartItemCount');
+            if (cartItemCountElement) {
+                cartItemCountElement.textContent = data.cartItemCount;
+            }
+            location.reload();
+
+            } else {
+                console.error(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при выполнении AJAX запроса:', error);
+        });
+}
+
 
 function applyCustomDaysFilter(type) {
     var value = document.getElementById('customDaysInput').value;
@@ -288,29 +270,36 @@ function applyCustomDaysFilter(type) {
     }
 }
 
-function handleFilterChange(value, type) {
-    if (value === 'reset') {
-        resetFilter();
-    console.error('value:', value, 'type', type );
-
-    } else {
-        if (type === 'cart') {
-            filterProductsInCart(value);
-        } else if (type === 'order') {
-            filterOrders(value);
-        } else {
-            filterProducts(value);
-        }
-    }
+function resetFilter() {
+    window.location.reload();
 }
 
-function updateCartItemCount(count) {
-    const cartItemCountElement = document.getElementById('cartItemCount');
-    if (cartItemCountElement) {
-        cartItemCountElement.textContent = count;
-    }
-}
+function showNotification(message) {
+    console.log('showNotification:', message);
 
+    let notificationElement = document.createElement('div');
+    notificationElement.textContent = message;
+
+    let updateSuccessMessage = document.getElementById('update-success-message');
+
+    updateSuccessMessage.innerHTML = ''; // Очищаем содержимое, если уже что-то было
+    updateSuccessMessage.appendChild(notificationElement);
+
+    console.log('showNotification start: ', notificationElement);
+
+    updateSuccessMessage.style.display = 'block';
+
+    setTimeout(function() {
+        notificationElement.remove();
+        updateSuccessMessage.style.display = 'none';
+    }, 4000);
+
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(location.reload());
+        }, 3000);
+    });
+}
 
 function getCookie(name) {
     let cookieValue = null;
@@ -327,42 +316,8 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Находим все кнопки увеличения и уменьшения количества товара
-const increaseButtons = document.querySelectorAll('.SnowShoppingcartProductList_ProductNumAction__button__eac55:first-child');
-const decreaseButtons = document.querySelectorAll('.SnowShoppingcartProductList_ProductNumAction__button__eac55:last-child');
 
-// Добавляем обработчики событий для кнопок увеличения и уменьшения количества товара
-increaseButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        // Находим элемент с количеством товара
-        const quantityElement = this.parentElement.querySelector('.SnowShoppingcartProductList_ProductNumAction__quantity__eac55');
-        // Увеличиваем количество товара на 1
-        const newQuantity = parseInt(quantityElement.textContent) + 1;
-        // Обновляем количество товара на странице
-        quantityElement.textContent = newQuantity;
-    });
-});
-
-decreaseButtons.forEach(button => {
-    button.addEventListener('click', function() {
-        // Находим элемент с количеством товара
-        const quantityElement = this.parentElement.querySelector('.SnowShoppingcartProductList_ProductNumAction__quantity__eac55');
-        // Уменьшаем количество товара на 1, но не меньше 1
-        const newQuantity = Math.max(parseInt(quantityElement.textContent) - 1, 1);
-        // Обновляем количество товара на странице
-        quantityElement.textContent = newQuantity;
-    });
-});
-
-
-
-const csrfToken = "{{ csrf_token }}";
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-let currentProductId = null;
-var datepicker = new Datepicker('#datepicker');
-
-
+//___________________________________________________Products___________________________________________________________
 document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("showModal") && (document.getElementById("showModal").addEventListener("show.bs.modal", function(e) {
         if (e.relatedTarget.classList.contains("edit-item-btn")) {
@@ -371,14 +326,29 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("add-btn").style.display = "none";
             document.getElementById("edit-btn").style.display = "block";
 
-            // Устанавливаем текущий productId
             currentProductId = e.relatedTarget.dataset.productId;
 
 
-            // Fetch product data using AJAX
-            let productId = currentProductId; // Передаем текущий productId
+            let productId = currentProductId;
 
-            fetch(`/products_list/`)
+            fetch('/api/categories/')
+                .then(response => response.json())
+                .then(categories => {
+                    let categorySelect = document.getElementById("edit-category");
+                    categorySelect.innerHTML = '';
+                    categories.forEach(category => {
+                        let option = document.createElement('option');
+                        option.value = category.id;
+                        option.text = category.name;
+                        categorySelect.appendChild(option);
+                    });
+                    let productCategory = data.find(item => item.id === parseInt(product.category));
+                    if (productCategory) {
+                        categorySelect.value = productCategory.id;
+                    }
+                })
+                .catch(error => console.error('Error fetching categories:', error));
+                        fetch('/api/products/')
                 .then(response => response.json())
                 .then(data => {
                     let product = data.find(item => item.id === parseInt(productId));
@@ -386,100 +356,89 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById("price").value = product.price;
                     document.getElementById("quantity").value = product.quantity;
                     document.getElementById("description").value = product.description;
+                    document.getElementById("edit-category").value = product.category;
 
                 })
                 .catch(error => console.error('Error fetching product details:', error));
-        } else if (e.relatedTarget.classList.contains("add-btn")) {
+
+        } else if (e.relatedTarget.classList.contains("create-btn")) {
             document.getElementById("exampleModalLabel").innerHTML = "Добавление товара";
             document.getElementById("showModal").querySelector(".modal-footer").style.display = "block";
             document.getElementById("edit-btn").style.display = "none";
             document.getElementById("add-btn").style.display = "block";
-        } else {
-
-            document.getElementById("exampleModalLabel").innerHTML = "Редактирование товара";
-            document.getElementById("showModal").querySelector(".modal-footer").style.display = "none";
         }
     }));
 
 
-    // Добавляем обработчик события клика на кнопку "Добавить товар"
+    // Обработчик события клика на кнопку "Добавить товар"
     document.getElementById("add-btn").addEventListener("click", function(event) {
         event.preventDefault();
 
-        // Получаем данные из полей модального окна
         let name = document.getElementById("name").value;
         let price = document.getElementById("price").value;
         let quantity = document.getElementById("quantity").value;
         let description = document.getElementById("description").value;
+        let category = document.getElementById("category").value;
 
-        // Получаем файл изображения, если он был выбран пользователем
         let imageInput = document.getElementById("image");
         let image = null;
         if (imageInput.files.length > 0) {
             image = imageInput.files[0];
         }
 
-        // Формируем объект с данными о новом продукте
         let newProductData = {
             name: name,
             price: price,
             quantity: quantity,
             description: description,
-            image: image  // Добавляем информацию об изображении в объект данных
+            category: category,
+            image: image
         };
 
-        // Вызываем функцию для отправки данных на сервер для создания товара
         createProduct(newProductData);
     });
 
-    // Добавляем обработчик события клика на кнопку "Обновить"
+    // Обработчик события клика на кнопку "Обновить"
     document.getElementById("edit-btn").addEventListener("click", function(event) {
         event.preventDefault();
 
-        // Получаем ID текущего товара
         let productId = currentProductId;
 
-        // Получаем данные из полей модального окна
         let name = document.getElementById("name").value;
         let price = document.getElementById("price").value;
         let quantity = document.getElementById("quantity").value;
         let description = document.getElementById("description").value;
+        let category = document.getElementById("edit-category").value;
 
-        // Получаем файл изображения, если он был выбран пользователем
         let imageInput = document.getElementById("image");
         let image = null;
         if (imageInput.files.length > 0) {
             image = imageInput.files[0];
         }
 
-        // Формируем объект с обновленными данными
         let updatedData = {
             name: name,
             price: price,
             quantity: quantity,
-            description: description
+            description: description,
+            category: category,
+
         };
 
-        // Если изображение было выбрано, добавляем его в объект с данными
         if (image) {
             updatedData['image'] = image;
         }
 
-        // Вызываем функцию для отправки обновленных данных на сервер
         updateData(productId, updatedData);
     });
 
 
-    // Добавляем обработчик события, который вызывается при открытии модального окна
+    // Обработчик события, который вызывается при открытии модального окна
     $('#deleteRecordModal').on('show.bs.modal', function (event) {
-        // Находим кнопку "Удалить" внутри модального окна
         const deleteButton = document.getElementById('delete-record');
-        // Получаем идентификатор продукта из кнопки "Удалить", которая была нажата для открытия модального окна
         const productId = event.relatedTarget.getAttribute('data-product-id');
-        // Устанавливаем атрибут data-product-id для кнопки "Да, удалить!"
         deleteButton.setAttribute('data-product-id', productId);
 
-        // Назначаем обработчик события клика на кнопку "Да, удалить!"
         deleteButton.addEventListener('click', function() {
             const productId = this.getAttribute('data-product-id');
             console.log("Идентификатор товара для удаления:", productId);
@@ -493,16 +452,15 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("price").value = "";
         document.getElementById("quantity").value = "";
         document.getElementById("description").value = "";
+        document.getElementById("category").value = "";
 
-        // Сбрасываем текущий productId
         currentProductId = null;
     });
 
 });
 
-
-// Обработка нажатия на кнопку "Добавить в корзину"
-    document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+//___________________________________________________Cart___________________________________________________________
+document.querySelectorAll('.add-to-cart-btn').forEach(button => {
         button.addEventListener('click', function() {
             const productId = this.getAttribute('data-product-id');
             const csrftoken = getCookie('csrftoken');
@@ -517,65 +475,152 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                // Обновление информации о корзине на странице
                 const cartItemCountElement = document.getElementById('cartItemCount');
                 if (cartItemCountElement) {
                     cartItemCountElement.textContent = data.cartItemCount;
                 }
                 location.reload();
-                // Например, показать уведомление об успешном добавлении товара в корзину
-                showToast('Товар успешно добавлен в корзину');
+                showNotification('Товар успешно добавлен в корзину');
             })
             .catch(error => {
                 console.error('Ошибка при добавлении товара в корзину:', error);
-                // Обработка ошибки, если не удалось добавить товар в корзину
-                showToast('Ошибка при добавлении товара в корзину. Пожалуйста, попробуйте еще раз.');
+                showNotification('Ошибка при добавлении товара в корзину. Пожалуйста, попробуйте еще раз.');
             });
         });
     });
 
-
-// Обработка нажатия на кнопку "Удалить из корзины"
 document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
     button.addEventListener('click', function() {
         const productId = this.getAttribute('data-product-id');
         const csrftoken = getCookie('csrftoken');
+        deleteProductFromCart(productId);
 
-        // AJAX запрос на удаление товара из корзины
-        fetch(`/remove_from_cart/${productId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Обновление содержимого корзины на основе данных из ответа
-            if (data.success) {
-                // Успешно удалено, обновляем отображение корзины
-            const cartItemCountElement = document.getElementById('cartItemCount');
-            if (cartItemCountElement) {
-                cartItemCountElement.textContent = data.cartItemCount;
-            }
-            location.reload();
 
-                // Дополнительно можно обновить другие части страницы, отображающие содержимое корзины
-            } else {
-                // Возникла ошибка при удалении товара из корзины, обработаем её
-                console.error(data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при выполнении AJAX запроса:', error);
+    });
+});
+
+const increaseButtons = document.querySelectorAll('.SnowShoppingcartProductList_ProductNumAction__button__eac55:first-child');
+const decreaseButtons = document.querySelectorAll('.SnowShoppingcartProductList_ProductNumAction__button__eac55:last-child');
+
+increaseButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        const quantityElement = this.parentElement.querySelector('.SnowShoppingcartProductList_ProductNumAction__quantity__eac55');
+        const newQuantity = parseInt(quantityElement.textContent) + 1;
+        quantityElement.textContent = newQuantity;
+    });
+});
+
+decreaseButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        const quantityElement = this.parentElement.querySelector('.SnowShoppingcartProductList_ProductNumAction__quantity__eac55');
+        const newQuantity = Math.max(parseInt(quantityElement.textContent) - 1, 1);
+        quantityElement.textContent = newQuantity;
+    });
+});
+
+//___________________________________________________Orders___________________________________________________________
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("showOrderModal") && (document.getElementById("showOrderModal").addEventListener("show.bs.modal", function(e) {
+        if (e.relatedTarget.classList.contains("edit-order")) {
+            document.getElementById("orderModalLabel").innerHTML = "Редактирование заказа";
+            document.getElementById("showOrderModal").querySelector(".modal-footer").style.display = "block";
+            document.getElementById("edit-order-btn").style.display = "block";
+
+            currentOrderId = e.relatedTarget.dataset.orderId;
+
+            let orderId = currentOrderId;
+
+            fetch('/api/users/')
+                .then(response => response.json())
+                .then(users => {
+                    const userSelect = document.getElementById('user_id');
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.username;
+                        userSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading users:', error));
+            fetch('/api/products/')
+                .then(response => response.json())
+                .then(products => {
+                    const productSelect = document.getElementById('product_id');
+                    products.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = product.name;
+                        productSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading products:', error));
+            fetch(`/api/orders/`)
+                .then(response => response.json())
+                .then(data => {
+                    let order = data.find(item => item.id === parseInt(orderId));
+                    document.getElementById("user_id").value = order.user
+                    document.getElementById("product_id").value = order.product;
+                })
+                .catch(error => console.error('Error fetching order details:', error));
+        }
+    }));
+
+    // Добавляем обработчик события клика на кнопку "Обновить заказ"
+    document.getElementById("edit-order-btn").addEventListener("click", function(event) {
+        event.preventDefault();
+
+        let orderId = currentOrderId;
+        console.info('edit-order-btn currentOrderId = ', currentOrderId)
+        console.info('edit-order-btn orderId = ', orderId)
+
+        let user = document.getElementById("user_id").value;
+        let product = document.getElementById("product_id").value;
+        console.info('edit-order-btn user_id = ', user)
+        console.info('edit-order-btn product_id = ', product)
+
+        let updatedOrderData = {
+            user: user,
+            product: product,
+        };
+
+        console.info('updatedOrderData = ', updatedOrderData)
+
+        updateOrder(orderId, updatedOrderData);
+    });
+
+    $('#deleteOrderModal').on('show.bs.modal', function (event) {
+        const deleteOrderButton = document.getElementById('delete-order');
+        const orderId = event.relatedTarget.getAttribute('data-orderId');
+        deleteOrderButton.setAttribute('data-orderId', orderId);
+
+        deleteOrderButton.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-orderId');
+            console.log("Идентификатор заказа для удаления:", orderId);
+            deleteOrder(orderId);
         });
+    });
+
+    // Функция для очистки полей модального окна при его скрытии
+    document.getElementById("showOrderModal").addEventListener("hidden.bs.modal", function() {
+        document.getElementById("user_id").value = "";
+        document.getElementById("product_id").value = "";
+
+        currentOrderId = null;
     });
 });
 
 
+//___________________________________________________Profile___________________________________________________________
 
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.querySelector('#editProfileForm');
 
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
 
-
+        var formData = new FormData(form);
+        updateProfile(formData); // Вызываем функцию отправки запроса
+    });
+});
 
 

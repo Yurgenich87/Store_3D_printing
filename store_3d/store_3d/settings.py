@@ -111,6 +111,7 @@ MIDDLEWARE = [
     'django.middleware.common.BrokenLinkEmailsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'mainapp.middleware.AdminRedirectMiddleware',
 ]
 ROOT_URLCONF = 'store_3d.urls'
 

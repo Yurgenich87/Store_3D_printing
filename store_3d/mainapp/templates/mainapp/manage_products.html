@@ -15,11 +15,11 @@
 <div class="col">
 <div class="row justify-content-around align-items-center">
         <div class="col-4 text-md-center">
-            <button type="submit" class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
-                <i class="las la-plus"></i>Добавить товар</button>
+            <button type="submit"  class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
+                <i></i>Добавить товар</button>
         </div>
         <div class="col-4 text-md-center">
-            <p id="productCount">Количество товаров: {{ products|length }}</p>
+            <p id="productCount" class="border-bottom">Количество товаров: {{ products|length }}</p>
         </div>
         <div class="col-4 text-md-center">
             <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -88,7 +88,7 @@
         <div class="modal-content">
             <div class="modal-header bg-info p-3 d-flex justify-content-between">
                 <h5 class="modal-title" id="exampleModalLabel">111111</h5>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
+                <button type="button" style="position: absolute; top: 10px; right: 0;" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
             </div>
             <form>
                 <div class="modal-body">
@@ -125,6 +125,13 @@
                         </div>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <div class="input-group">
+                        <label class="input-group-text" id="category-label">Категория</label>
+                        <select class="form-select" id="edit-category" aria-describedby="category-label" required="">
+                        </select>
+                    </div>
+                </div>
                 <div class="modal-footer" style="display: block;">
                     <div class="hstack gap-2 justify-content-end">
                         <button type="submit" class="blue" data-bs-dismiss="modal">Закрыть</button>
@@ -142,7 +149,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btn-close"></button>
+                <button type="button" style="position: absolute; top: 10px; right: 0;" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btn-close"></button>
             </div>
             <div class="modal-body">
                 <div class="mt-2 text-center">

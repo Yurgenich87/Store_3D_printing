@@ -6,62 +6,80 @@
 {% endblock %}
 
 {% block content %}
-    {% csrf_token %}
-    <div class="section-title">
-        <h2>{{ title }}</h2>
-    </div>
-
-    <div class="card">
-        <div id="customerList">
-            <div class="row g-4 mb-3">
-                <div class="col-sm-auto">
-                    <div class="row justify-content-around align-items-center">
-                        <div class="col-4">
-                            <p id="productCount">Количество товаров: {{ cartitems|length }}</p>
+{% csrf_token %}
+<div class="row" style="position: sticky; top: 0; left: 0; height: 40px; z-index: 1000; background-color: #fff;">
+    <div class="col">
+        <!-- Содержимое заголовка -->
+        <div class="section-title">
+            <h2>{{ title }}</h2>
+            <div class="col-md-3 offset-md-9 offset-m text-md-end">
+                <h6 class="card-title text-md-center mb-2">Оформите заказ</h6>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row g-0">
+                            <div class="col-5">
+                                Товаров:
+                                Сумма:
+                            </div>
+                            <div class="col-5">
+                                <span class="blue-text">{{ cart_products_length }} шт.</span><br>
+                                <span class="blue-text">{{ total_price }} руб.</span>
+                            </div>
+                            <div class="col" style="text-align: center;">
+                                <a href="{% url 'purchase' %}" class="btn lettuce">Купить</a>
+                            </div>
                         </div>
-                        <div class="col-4 text-md-center">
-                                        <input type="number" class="form-control custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top"
-                                               placeholder="Введите количество дней" id="customDaysInput"
-                                               data-bs-custom-class="custom-tooltip"
-                                               data-bs-title="Отобразится список заказов за введенное количество дней">
-                                        <button type="button" class="blue" onclick="applyCustomDaysFilter('cart')">Применить</button>
-                                        <button type="button" class="red" onclick="resetFilter()">Сбросить</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive table-card mt-3 mb-1">
-                        <table class="table align-middle table-nowrap table-striped" id="customerTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="sort" data-sort="name">Наименование</th>
-                                    <th class="sort" data-sort="price">Цена</th>
-                                    <th class="sort" data-sort="quantity">Кол-во</th>
-                                    <th class="sort" data-sort="description">Описание</th>
-                                    <th class="sort" data-sort="at_data">Дата добавления</th>
-                                    <th class="sort" data-sort="date">Всего: {{ total_price }} руб.</th>
-                                </tr>
-                            </thead>
-                            {% for product in cartitems %}
-
-
-                            <tbody class="list form-check-all">
-                                <tr>
-                                    <td class="name">{{ product.name }}</td>
-                                    <td class="price">{{ product.price }} руб.</td>
-                                    <td class="quantity">{{ product.quantity }} шт.</td>
-                                    <td class="description">{{ product.description }}</td>
-                                    <td class="at_data">{{ product.at_data }}</td>
-                                    <td>
-                                        <button type="submit" class="blue" data-product-id="{{ product.id }}">Добавить</button>
-                                        <button type="submit" class="red" data-product-id="{{ product.id }}">Удалить</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            {% endfor %}
-                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
+<div class="row g-0 ">
+    <div class="col-9" style="overflow-y: auto; height: auto; z-index: 9999; ">
+        <div class="col-11 justify-content-around align-items-center">
+            <div class="row g-4 mb-4 mt-4">
+                            {% for product in products %}
+                    <div class="card mb-3" style="max-width: max-content;">
+                        <div class="row g-0">
+                            <div class="col-md-2">
+                                <img src="{{ product.image.url }}" class="card-img-top" alt="">
+                            </div>
+                            <div class="col-md-10">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col">
+                                            <h5 class="card-title text-md-center border-bottom">
+                                                {{ product.name }}
+                                            </h5>
+                                        </div>
+                                        <div class="col-5" style="text-align: right;">
+                                            Цена: <span class="blue-text">{{ product.formatted_price }} руб.</span><br>
+                                            На складе: <span class="blue-text">{{ product.quantity }} шт.</span>
+                                        </div>
+                                    </div>
+                                    <p class="card-text">
+                                       {{ product.description }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-0">
+                            <div  class="col" style="text-align: right; padding-bottom: 10px">
+                                {% for cart_product in cart_products %}
+                                    {% if cart_product.product_id == product.id %}
+                                        <i class="las la-minus la-2x remove-from-cart-btn" data-product-id="{{ product.id }}"></i>
+                                        <span class="mx-2">{{ cart_product.quantity }} шт.</span>
+                                    {% endif %}
+                                {% endfor %}
+                                <i class="las la-plus la-2x add-to-cart-btn" data-product-id="{{ product.id }}"></i>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

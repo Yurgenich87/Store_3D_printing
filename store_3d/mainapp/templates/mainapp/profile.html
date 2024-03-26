@@ -3,41 +3,113 @@
 {% block title %}Профиль пользователя{% endblock %}
 
 {% block content %}
+<div id="update-success-message" style="display: none; position: fixed; top: 10%; left: 50%; transform: translate(-50%, -50%); background-color: #28a745; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000;" class="alert" role="alert"></div>
+
+
 <section id="user-profile" class="section-bg">
-  <div class="container">
-    <div class="section-title">
-      <h2>Профиль пользователя</h2>
+    <div class="container">
+        <div class="section-title">
+            <h2>Профиль пользователя: {{user.username}}(ID: {{user.id}})</h2>
+            <div class="col text-md-start">
+              {% csrf_token %}
+              <button type="submit" class="btn red col-3">Удалить профиль</button>
+              <form action="{% url 'delete_profile' %}" method="post" role="form" onsubmit="return confirm('Вы уверены, что хотите удалить свой профиль? Все данные будут удалены.');">
+              </form>
+            </div>
+        </div>
+
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <form action="{% url 'edit_profile' %}" method="post" role="form">
+                {% csrf_token %}
+                <div class="col-8 offset-3 text-md-center">
+                    <div class="form-group row mt-2">
+                        <label for="id_username" class="col-sm-4 col-form-label text-md-end">Никнейм:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_username" name="username" value="{{ user.username }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_email" class="col-sm-4 col-form-label text-md-end">Email:</label>
+                        <div class="col-sm-8">
+                            <input type="email" class="form-control" id="id_email" name="email" value="{{ user.email }}">
+                        </div>
+                    </div>
+                    <p class="col mt-3 mb-0 grey">
+                        Для изменения пароля, введите новый пароль и подтверждение.
+                    </p>
+
+                    <div class="form-group row mt-2">
+                        <label for="id_password" class="col-sm-4 col-form-label text-md-end">Пароль:</label>
+                        <div class="col-sm-8">
+                            <input type="password" class="form-control" id="id_password" name="password">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2 mb-5">
+                        <label for="id_password_confirmation" class="col-sm-4 col-form-label text-md-end">Подтверждение пароля:</label>
+                        <div class="col-sm-8">
+                        <input type="password" class="form-control" id="id_password_confirmation" name="password_confirmation">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_first_name" class="col-sm-4 col-form-label text-md-end">Имя:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_first_name" name="first_name" value="{{ user.first_name }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_last_name" class="col-sm-4 col-form-label text-md-end">Фамилия:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_last_name" name="last_name" value="{{ user.last_name }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_patronymic_name" class="col-sm-4 col-form-label text-md-end">Отчество:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_patronymic_name" name="patronymic_name" value="{{ user.patronymic_name }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_phone" class="col-sm-4 col-form-label text-md-end">Телефон:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_phone" name="phone" value="{{ user.phone }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_street" class="col-sm-4 col-form-label text-md-end">Улица:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_street" name="street" value="{{ user.street }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_city" class="col-sm-4 col-form-label text-md-end">Город:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_city" name="city" value="{{ user.city }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_region" class="col-sm-4 col-form-label text-md-end">Регион:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_region" name="region" value="{{ user.region }}">
+                        </div>
+                    </div>
+                    <div class="form-group row mt-2">
+                        <label for="id_postal_code" class="col-sm-4 col-form-label text-md-end">Почтовый индекс:</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="id_postal_code" name="postal_code" value="{{ user.postal_code }}">
+                        </div>
+                    </div>
+                      <button type="submit" class="col-5 btn blue mt-4">Обновить данные</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    {% if messages %}
-      <div class="alert alert-success">
-        {% for message in messages %}
-          {{ message }}
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <h3>Редактировать профиль</h3>
-        <form action="{% url 'edit_profile' %}" method="post" role="form">
-          {% csrf_token %}
-          {{ form.as_p }}
-
-          <button type="submit" class="btn btn-primary">Обновить данные</button>
-        </form>
-      </div>
-
-      <div class="col-md-6">
-        <h3>Удалить профиль</h3>
-        <p>Вы уверены, что хотите удалить свой профиль? Это действие нельзя отменить.</p>
-        <form action="{% url 'delete_profile' %}" method="post" role="form" onsubmit="return confirm('Вы уверены, что хотите удалить свой профиль? Все данные будут удалены.');">
-          {% csrf_token %}
-
-          <button type="submit" class="btn btn-danger">Удалить профиль</button>
-        </form>
-      </div>
-    </div>
-  </div>
 </section>
 {% endblock %}

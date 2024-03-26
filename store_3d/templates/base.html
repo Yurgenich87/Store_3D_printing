@@ -46,45 +46,46 @@
                     {% if user.is_authenticated %}
                         <span><a href="{% url 'profile' %}"><i class="las la-id-card"></i>{{ user.username }}</a></span>
                         <a href="{% url 'logout' %}" class="link-danger ">Выйти</a>
+                        <a href="{% url 'cart' %}" class="las la-cart-arrow-down la-2x"></a>
                     {% else %}
                         <a href="{% url 'login' %}">Вы не вошли в систему. Войти</a>
                     {% endif %}
                 </a>
             </div>
             <div class="col-6 col-md-3 text-md-right">
-                <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
-                <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="facebook"><i class="bi bi-telegram"></i></a>
+                <a href="#" class="twitter"><i class="lab la-viber la-2x"></i></a>
+                <a href="#" class="facebook"><i class="lab la-vk la-2x"></i></i></a>
+                <a href="#" ><i class="lab la-whatsapp la-2x"></i></a>
+                <a href="#" ><i class="lab la-telegram la-2x"></i></a>
             </div>
         </div>
-
-        <div class="row justify-content-between">
+        <div class="row">
             <div class="col-5 text-md-center">
                 <h1><a href="{% url 'index' %}" class="link-primary">{{ name_store }}</a></h1>
             </div>
-            <div class="col-7">
-                    <nav id="navbar" class="navbar order-last order-lg-0">
+            <div class="col-7 text-md-end">
+                <nav id="navbar" class="navbar order-last order-lg-0 text-md-end">
                     <ul>
                     <li><a class="nav-link scrollto" href="/about/">О нас</a></li>
                     <li><a class="nav-link scrollto" href="/gallery/">Галерея</a></li>
                     <li><a class="nav-link scrollto" href="/articles/">Статьи</a></li>
                     <li><a class="nav-link scrollto" href="/contact/">Контакты</a></li>
                     <li><a class="nav-link scrollto" href="/store/">Магазин</a></li>
-                    <li><a class="nav-link scrollto" href="/products/">Продукция</a></li>
-                    <li><a class="nav-link scrollto" href="/orders/">Ордера</a></li>
+                    {% if request.user.is_authenticated and request.user.is_admin %}
+                        <li><a class="nav-link scrollto" href="/products/">Продукция</a></li>
+                        <li><a class="nav-link scrollto" href="/orders/">Ордера</a></li>
+                        <li><a class="nav-link scrollto" href="/admin/">Админ</a></li>
+                    {% endif %}
+
                     </ul>
-                        <i class="bi bi-list mobile-nav-toggle"></i>
-                    </nav>
-                <!-- .navbar -->
+                </nav>
             </div>
         </div>
         <div class="row justify-content-end">
             <div class="row">
                   <div class="row">
-                    <div class="col">
                         <section class="breadcrumbs">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="col-3 d-flex justify-content-between align-items-center">
                                     <ol>
                                     {% if title == 'Главная' %}
                                     <li><a href="{% url 'index' %}">{{ title }}</a></li>
@@ -92,7 +93,6 @@
                                     <li><a href="{% url 'index' %}">{{ main }}</a></li>
                                     <li> {{ title }}</li>
                                     {% endif %}
-
                                     </ol>
                                 </div>
                         </section>
@@ -101,7 +101,7 @@
                         {% if request.path == '/store/' %}
                         <div class="col">
                             <a href="{% url 'cart' %}">
-                                Сумма: {{ cart_sum.total_price }} руб.
+                                Сумма: {{ total_price }} руб.
                                 <i class="las la-shopping-cart la-2x link-success"></i>
                             </a>
                         </div>
@@ -113,11 +113,9 @@
 
 </header>
 
-
-
-    <div class="container" style="min-height: 57vh;">
+<div class="container" style="min-height: 65vh;">
     {% block content %}{% endblock %}
-    </div>
+</div>
     <!-- ======= Footer ======= -->
 <footer id="footer_3d" >
     <div class="container">
@@ -153,17 +151,10 @@
     <div class="container d-md-flex py-4">
         <div class="me-md-auto text-center text-md-start">
             <div class="copyright">
-                &copy; Авторские права  <strong><span>{{ name_store }}</span></strong>. Все права защищены.
+                &copy; Авторские права  <strong><span>{{name_store}}</span></strong>. Все права защищены.
             </div>
             <div class="credits">
             </div>
-        </div>
-        <div class="social-links text-center text-md-right pt-3 pt-md-0">
-            <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
-            <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
-            <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
-            <a href="#" class="google-plus"><i class="bx bxl-skype"></i></a>
-            <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
         </div>
     </div>
 </footer>

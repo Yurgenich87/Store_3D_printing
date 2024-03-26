@@ -3,26 +3,52 @@ import logging
 import os
 import random
 from datetime import timedelta, datetime
-from os.path import basename
-
+from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from django.core.checks import messages
-from django.core.files.storage import FileSystemStorage, default_storage
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.mail import send_mail
+from django.db.models import F
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.template.defaultfilters import floatformat
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from .models import Article, CartItem, Order, Cart, Product
+from django.views.decorators.http import require_http_methods, require_POST
+from rest_framework import generics
+
+from .models import Article, CartItem, Order, Cart, Product, User, Category
 from .forms import UserForm, LoginForm, UserProfileForm, OrderForm, ProductForm, ImageForm
+from .serializers import UserSerializer, ProductSerializer, OrderSerializer,  CategoriesSerializer
 
 logger = logging.getLogger(__name__)
 
 COMMON_CONTENT = settings.COMMON_CONTENT
+
+
+# __________________________________________________________API_________________________________________________________
+class UserListAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class ProductListAPIView(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class OrderListAPIView(generics.ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+
+class CategoriesListAPIView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoriesSerializer
 
 
 # ________________________________________________________General_____________________________________________________
@@ -30,17 +56,14 @@ def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-            logger.info(f' Валидация формы успешна')
             email = form.cleaned_data['email']
             password = form.cleaned_data['password']
             user = authenticate(request, email=email, password=password)
-            logger.debug(f"{user = }")
             if user is not None:
                 login(request, user)
-                logger.info(f'Пользователь успешно вошел: {user.email}')
                 return redirect('index')
             else:
-                logger.info(f'Неверная попытка входа с адресом электронной почты: {email}')
+                messages.add_message(request, messages.ERROR, 'Неверный логин или пароль.')
                 return redirect('login')
     else:
         form = LoginForm()
@@ -49,7 +72,6 @@ def login_view(request):
         'title': 'Вход',
         **COMMON_CONTENT
     }
-    logger.debug("Страница входа успешно загружена")
     return render(request, 'mainapp/login.html', content)
 
 
@@ -78,6 +100,7 @@ def register(request):
 
 
 def logout_view(request):
+
     logout(request)
     logger.info('Пользователь успешно вышел из системы')
     return redirect('index')
@@ -85,20 +108,22 @@ def logout_view(request):
 
 @login_required
 def profile(request):
-    """"""
+    """User profile edit menu"""
     user = request.user
     content = {
         'user': user,
-        'title': 'Страница профиля',
+        'title': 'Профиль',
         **COMMON_CONTENT
     }
 
+    logger.debug(f"Страница профиля пользователя: {user} успешно загружена!")
     return render(request, 'mainapp/profile.html', content)
 
 
-@login_required
 def edit_profile(request):
     user = request.user
+    logger.debug(f'Пользователь {user} редактирует свой профиль')
+
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=user)
         if form.is_valid():
@@ -106,7 +131,13 @@ def edit_profile(request):
             if new_password:
                 user.set_password(new_password)
             form.save()
+            logger.debug(f'Успешное обновление данных профиля {user}')
+
             return redirect('profile')
+        else:
+            logger.error(f'Неверные данные в форме: {form.errors}')
+            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
     else:
         form = UserProfileForm(instance=user)
     content = {
@@ -170,7 +201,6 @@ def gallery(request):
 
 
 def articles(request):
-
     articles = Article.objects.all()
     content = {
         'title': 'Статьи',
@@ -238,10 +268,10 @@ def about(request):
 def store(request):
     user = request.user
     products = Product.objects.all()
-    cart_sum = Cart.objects.filter(user=user).first()
     cart_products = CartItem.objects.filter(cart__user=user)
+    total_price = sum(item.product.price * item.quantity for item in cart_products)
     context = {
-        'cart_sum': cart_sum,
+        'total_price': total_price,
         'products': products,
         'cart_products': cart_products,
         'title': 'Магазин',
@@ -315,16 +345,14 @@ def update_product(request, product_id):
         return JsonResponse({'error': 'POST request expected'}, status=405)
 
 
-def product_list(request):
-    products = Product.objects.all()
-    data = [{
-        'id': product.id,
-        'name': product.name,
-        'description': product.description,
-        'price': product.price,
-        'quantity': product.quantity,
-    } for product in products]
-    return JsonResponse(data, safe=False)
+@require_http_methods(["POST", "PUT"])
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, pk=product_id)
+    if request.method == 'POST' or request.method == 'PUT':
+        product.delete()
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 def filter_products(request, days):
@@ -348,17 +376,18 @@ def filter_products(request, days):
     return render(request, 'mainapp/manage_products.html', content)
 
 
-@require_http_methods(["POST", "PUT"])
-def delete_product(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
-    if request.method == 'POST' or request.method == 'PUT':
-        product.delete()
-        return JsonResponse({'success': True})
-
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-
 # ________________________________________________________Orders_____________________________________________________
+def manage_orders(request):
+    orders = Order.objects.all()
+    context = {
+        'orders': orders,
+        'title': 'Мои заказы',
+        **COMMON_CONTENT
+    }
+    logger.debug(f"Страница {context['title']} успешно загружена")
+    return render(request, 'mainapp/manage_orders.html', context)
+
+
 def orders(request, pk=None):
     if pk:
         order = get_object_or_404(Order, pk=pk)
@@ -401,15 +430,10 @@ def create_order(request):
         if form.is_valid():
             user = form.cleaned_data['user']
             product = form.cleaned_data['product']
-            quantity = form.cleaned_data['quantity']
-
-            price_sum = product.price * quantity
 
             Order.objects.create(
                 user=user,
                 product=product,
-                quantity=quantity,
-                price_sum=price_sum
             )
             return redirect('manage_orders')
     else:
@@ -422,27 +446,24 @@ def create_order(request):
     return render(request, 'mainapp/create_order.html', context)
 
 
+@csrf_exempt
+@require_POST
 def update_order(request, order_id):
+    logger.info(f'Updating order data for order {order_id}')
     order = get_object_or_404(Order, pk=order_id)
-    if request.method == 'POST':
-        form = OrderForm(request.POST, instance=order)
-        if form.is_valid():
-            form.save()
-            order.sum_orders = order.product.price * form.cleaned_data['quantity']
-            order.save()
-            return redirect('manage_orders')
 
+    order_form = OrderForm(request.POST, instance=order)
+
+    if order_form.is_valid():
+        order_form.save()
+        logger.info(f'Order {order.id} successfully updated.')
+        return JsonResponse({'message': 'Order updated successfully'}, status=200)
     else:
-        form = OrderForm(instance=order)
-    context = {
-        'form': form,
-        'title': 'Редактирование заказа',
-        'order': order,
-    }
-
-    return render(request, 'mainapp/update_order.html', context)
+        errors = order_form.errors
+        return JsonResponse({'error': errors}, status=400)
 
 
+@csrf_exempt
 def delete_order(request, order_id):
     order = get_object_or_404(Order, pk=order_id)
     if request.method == 'POST':
@@ -485,26 +506,21 @@ def filter_order(request, days):
     return render(request, 'mainapp/manage_orders.html', content)
 
 
-def manage_orders(request):
-    orders = Order.objects.all()
-    context = {
-        'orders': orders,
-        'title': 'Мои заказы',
-        **COMMON_CONTENT
-    }
-
-    return render(request, 'mainapp/manage_orders.html', context)
-
-
 # ________________________________________________________Cart_____________________________________________________
 @login_required
 def view_cart(request):
     user = request.user
-    cartitems = CartItem.objects.filter(cart__user=user)
-    total_price = sum(item.product.price * item.quantity for item in cartitems)
+    products = Product.objects.filter(cart__user=user).annotate(formatted_price=F('price'))
+    cart_products = CartItem.objects.filter(cart__user=user)
+    total_price = sum(item.product.price * item.quantity for item in cart_products)
+    total_price = intcomma(floatformat(total_price, -2))
+    cart_products_length = sum(item.quantity for item in cart_products)
+    logger.debug(f" {cart_products_length = } ")
     context = {
-        'cartitems': cartitems,
+        'products': products,
+        'cart_products': cart_products,
         'total_price': total_price,
+        'cart_products_length': cart_products_length,
         'title': 'Корзина',
         **COMMON_CONTENT
     }
@@ -514,26 +530,29 @@ def view_cart(request):
     return render(request, 'mainapp/cart.html', context)
 
 
+@login_required
 def add_to_cart(request, product_id):
     if request.method == 'POST':
         try:
+            user = request.user
             product = Product.objects.get(pk=product_id)
             quantity = 1  # Устанавливаем количество товара равным 1
-            sum_orders = product.price * quantity
 
-            cart, created = Cart.objects.get_or_create(user=request.user)
+            cart, created = Cart.objects.get_or_create(user=user)
 
             cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
 
             if not created:
                 cart_item.quantity += quantity
                 cart_item.save()
-                cart.total_price += sum_orders
-                cart.save()
-            else:
-                order = Order(user=request.user, product=product, quantity=quantity,
-                              sum_orders=sum_orders, at_data=timezone.now())
-                order.save()
+
+            # Вне зависимости от создания нового элемента корзины, создаем заказ
+            order = Order(user=user, product=product, at_data=timezone.now())
+            order.save()
+
+            # Пересчитываем сумму заказа после добавления товара в корзину
+            cart.total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
+            cart.save()
 
             logger.debug(f"Товар {product.id} добавлен в корзину")
 
@@ -547,11 +566,13 @@ def add_to_cart(request, product_id):
             return JsonResponse({'success': False, 'error': str(e)})
 
 
+@login_required
 def remove_from_cart(request, product_id):
     if request.method == 'POST':
         try:
+            user = request.user
             product = Product.objects.get(pk=product_id)
-            cart, created = Cart.objects.get_or_create(user=request.user)
+            cart = Cart.objects.get(user=user)
             cart_item = CartItem.objects.filter(cart=cart, product=product).first()
 
             if cart_item:
@@ -564,6 +585,15 @@ def remove_from_cart(request, product_id):
 
                 logger.debug(f"Товар {product.id} удален из корзины")
 
+                cart.total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
+                cart.save()
+
+                order = Order.objects.filter(user=user, status='P').last()
+
+                if order:
+                    order.status = 'X'
+                    order.save()
+
                 cart_item_count = CartItem.objects.filter(cart=cart).count()
                 return JsonResponse({'success': True, 'cartItemCount': cart_item_count})
             else:
@@ -573,6 +603,42 @@ def remove_from_cart(request, product_id):
         except Exception as e:
             logger.debug(f"Ошибка при удалении товара из корзины: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+def purchase(request):
+    user = request.user
+
+    products = Product.objects.filter(cart__user=user).annotate(formatted_price=F('price'))
+    cart_products = CartItem.objects.filter(cart__user=user)
+    total_price = sum(item.product.price * item.quantity for item in cart_products)
+    total_price = intcomma(floatformat(total_price, -2))
+    cart_products_length = sum(item.quantity for item in cart_products)
+
+    if request.method == 'POST':
+        # Обработка данных формы и выбранного способа оплаты
+        payment_method = request.POST.get('payment_method')
+        # Дополнительная логика, например, сохранение заказа в базе данных
+
+        # Изменение статуса заказа на "Completed"
+        order = Order.objects.filter(user=request.user, status='Pending').last()
+        if order:
+            order.status = 'Completed'
+            order.save()
+
+        # Перенаправление на другую страницу (например, страницу подтверждения заказа)
+        return redirect('order_confirmation')
+    context = {
+        'user': user,
+        'products': products,
+        'cart_products': cart_products,
+        'total_price': total_price,
+        'cart_products_length': cart_products_length,
+        'title': 'Корзина',
+        **COMMON_CONTENT
+    }
+
+    return render(request, 'mainapp/purchase.html')
 
 
 def filter_products_in_cart(request, days):

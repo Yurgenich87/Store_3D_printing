@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}
+    Оформление покупки
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card" style="width: 18rem;">
+        <ul class="list-group list-group-flush">
+        <li class="list-group-item">Клиент</li>
+        <li class="list-group-item">{{user.}}</li>
+        <li class="list-group-item">Третий элемент</li>
+    </ul>
+    <div class="card-footer">
+        Футер карточки
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <h2>Оформление покупки</h2>
+            <!-- Форма для ввода данных пользователя и выбора оплаты -->
+            <form method="post" action="">
+                {% csrf_token %}
+                <!-- Поля для ввода данных пользователя -->
+                <!-- Здесь могут быть поля для ввода имени, адреса, телефона и т.д. -->
+
+                <!-- Поле для выбора способа оплаты -->
+                <div class="form-group">
+                    <label for="payment_method">Выберите способ оплаты:</label>
+                    <select class="form-control" id="payment_method" name="payment_method">
+                        <option value="card">Кредитная карта</option>
+                        <option value="cash">Наличные</option>
+                    </select>
+                </div>
+
+                <!-- Кнопка для подтверждения покупки -->
+                <button type="submit" class="btn btn-primary">Подтвердить покупку</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

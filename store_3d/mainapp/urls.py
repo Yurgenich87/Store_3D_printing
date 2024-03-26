@@ -4,13 +4,20 @@ from django.urls import path
 from django.views.generic import RedirectView
 
 from .views import index, about, contact, register, gallery, login_view, \
-    logout_view, profile, edit_profile, delete_profile, manage_products, update_order, delete_order, \
-    create_order, orders, manage_orders, update_product, delete_product, articles, product_list, create_product, \
+    logout_view, edit_profile, delete_profile, manage_products, update_order, \
+    create_order, manage_orders, update_product, delete_product, articles, create_product, \
     filter_products, add_to_cart, remove_from_cart, view_cart, store, filter_products_in_cart, randomize_order_dates, \
-    filter_order, create_article, contact_form_submit
+    filter_order, create_article, contact_form_submit, UserListAPIView, ProductListAPIView, \
+    OrderListAPIView, delete_order, purchase, profile, CategoriesListAPIView
 
 urlpatterns = [
     path('', index, name='index'),
+
+    path('api/users/', UserListAPIView.as_view(), name='user-list'),
+    path('api/products/', ProductListAPIView.as_view(), name='product-list'),
+    path('api/orders/', OrderListAPIView.as_view(), name='order-list'),
+    path('api/categories/', CategoriesListAPIView.as_view(), name='categories-list'),
+
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register, name='register'),
@@ -27,7 +34,6 @@ urlpatterns = [
     path('delete_profile/', delete_profile, name='delete_profile'),
 
     path('products/', manage_products, name='manage_products'),
-    path('products_list/', product_list, name='product_list'),
     path('update_product/<int:product_id>/', update_product, name='update_product'),
     path('create_product/', create_product, name='create_product'),
     path('filter_products/<int:days>/', filter_products, name='filter_products'),
@@ -40,11 +46,14 @@ urlpatterns = [
     path('filter_order/<int:days>/', filter_order, name='filter_order'),
     path('randomize_order_dates/', randomize_order_dates, name='randomize_order_dates'),
 
+    path('store/', store, name='store'),
+
     path('add_to_cart/<int:product_id>/', add_to_cart, name='add_to_cart'),
     path('cart/', view_cart, name='cart'),
     path('remove_from_cart/<int:product_id>/', remove_from_cart, name='remove_from_cart'),
     path('filter_products_in_cart/<int:days>/', filter_products_in_cart, name='filter_products_in_cart'),
-    path('store/', store, name='store'),
+
+    path('purchase/', purchase, name='purchase'),
 
     path('', RedirectView.as_view(url='/media/', permanent=True)),
 ]
