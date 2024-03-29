@@ -21,8 +21,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 from rest_framework import generics
 from .models import Article, CartItem, Order, Cart, Product, User, Category
 from .forms import UserForm, LoginForm, UserProfileForm, OrderForm, ProductForm, ImageForm
-from .serializers import UserSerializer, ProductSerializer, OrderSerializer,  CategoriesSerializer
-
+from .serializers import UserSerializer, ProductSerializer, OrderSerializer, CategoriesSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +198,7 @@ def index(request):
 
 def gallery(request):
     """View function for the gallery page."""
-    gallery_folder = r'E:\PYTHON\Store_3d_printing\store_3d\static\img\gallery'
+    gallery_folder = os.path.join(settings.STATIC_ROOT, 'img', 'gallery')
     file_names = os.listdir(gallery_folder)
     gallery_range = range(1, len(file_names) + 1)
     content = {

@@ -132,7 +132,6 @@ class Cart(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 
-
 class CartItem(models.Model):
     """Model representing an item in a shopping cart."""
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
