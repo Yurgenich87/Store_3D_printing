@@ -624,3 +624,106 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contact-form');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/contact_form_submit/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(data => {
+            document.querySelector('.sent-message').innerText = data;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('paymentForm');
+    const loadingMessage = form.querySelector('.loading');
+    const successMessage = form.querySelector('.sent-message');
+    const errorMessage = form.querySelector('.error-message');
+    const paymentOptions = document.querySelectorAll('.payment-option');
+
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        let paymentOptionSelected = false;
+        paymentOptions.forEach(function(option) {
+            if (option.checked) {
+                paymentOptionSelected = true;
+            }
+        });
+
+        if (!paymentOptionSelected) {
+            errorMessage.style.display = 'block';
+            return;
+        }
+
+        loadingMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+
+        setTimeout(function() {
+            const success = Math.random() < 0.8;
+
+            loadingMessage.style.display = 'none';
+
+            if (success) {
+                successMessage.style.display = 'block';
+                setTimeout(function() {
+                    successMessage.style.display = 'none';
+                    form.reset();
+                    window.location.href = '/store/'; // Перенаправление на страницу магазина
+                }, 5000);
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }, 2000);
+
+        const formData = new FormData(this);
+
+        fetch('/process_payment/', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Действия после получения ответа от сервера (если нужно)
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+

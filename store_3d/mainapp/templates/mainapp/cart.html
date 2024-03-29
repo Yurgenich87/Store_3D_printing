@@ -14,7 +14,7 @@
             <h2>{{ title }}</h2>
             <div class="col-md-3 offset-md-9 offset-m text-md-end">
                 <h6 class="card-title text-md-center mb-2">Оформите заказ</h6>
-                <div class="card">
+                <div class="card cart-pay">
                     <div class="card-body">
                         <div class="row g-0">
                             <div class="col-5">
@@ -44,7 +44,9 @@
                     <div class="card mb-3" style="max-width: max-content;">
                         <div class="row g-0">
                             <div class="col-md-2">
-                                <img src="{{ product.image.url }}" class="card-img-top" alt="">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" class="card-img-top" alt="">
+                                {% endif %}
                             </div>
                             <div class="col-md-10">
                                 <div class="card-body">

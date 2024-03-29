@@ -2,162 +2,160 @@
 <html>
 {% load static %}
 <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }}</title>
 
-  <!-- Favicons -->
-  <link href="{% static 'img/fav_icon.png' %}" rel="icon">
-  <link href="{% static 'img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+<!-- Favicons -->
+<link href="{% static 'img/fav_icon.png' %}" rel="icon">
+<link href="{% static 'img/apple-touch-icon.png' %}" rel="apple-touch-icon">
 
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+<!-- Bootstrap CSS Files -->
+<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+<link href="{% static 'css/bootstrap.rtl.css' %}" rel="stylesheet">
 
-    <!-- Bootstrap CSS Files -->
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="{% static 'css/bootstrap.rtl.css' %}" rel="stylesheet">
+<!-- Vendor CSS Files -->
+<link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/animate.css/animate.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/remixicon/remixicon.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/line-awesome.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/Datepicker.js-master/dist/css/datepicker.material.css' %}" rel="stylesheet">
 
-    <!-- Vendor CSS Files -->
-    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/animate.css/animate.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/remixicon/remixicon.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/line-awesome.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/Datepicker.js-master/dist/css/datepicker.material.css' %}" rel="stylesheet">
-
-    <!-- Template Main CSS File -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style_3d.css' %}?version=1.0">
+<!-- Template Main CSS File -->
+<link rel="stylesheet" type="text/css" href="{% static 'css/style_3d.css' %}?version=1.0">
 
 <body>
-<header id="header_3d" class="d-flex flex-wrap justify-content-center py-1 border-bottom">
-    <div class="container text-center">
-        <div class="row justify-content-start border-bottom">
-            <div class="col-6 col-md-3">
-                <a class="las la-envelope" href="mailto:contact@example.com"> {{ email_store }} </a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a class="las la-phone-volume" href="mailto:contact@example.com">{{ phone }}</a>
-            </div>
-            <div class="col-6 col-md-3">
-                <a class="contact-info">
-                    {% if user.is_authenticated %}
-                        <span><a href="{% url 'profile' %}"><i class="las la-id-card"></i>{{ user.username }}</a></span>
-                        <a href="{% url 'logout' %}" class="link-danger ">Выйти</a>
-                        <a href="{% url 'cart' %}" class="las la-cart-arrow-down la-2x"></a>
-                    {% else %}
-                        <a href="{% url 'login' %}">Вы не вошли в систему. Войти</a>
-                    {% endif %}
-                </a>
-            </div>
-            <div class="col-6 col-md-3 text-md-right">
-                <a href="#" class="twitter"><i class="lab la-viber la-2x"></i></a>
-                <a href="#" class="facebook"><i class="lab la-vk la-2x"></i></i></a>
-                <a href="#" ><i class="lab la-whatsapp la-2x"></i></a>
-                <a href="#" ><i class="lab la-telegram la-2x"></i></a>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-5 text-md-center">
-                <h1><a href="{% url 'index' %}" class="link-primary">{{ name_store }}</a></h1>
-            </div>
-            <div class="col-7 text-md-end">
-                <nav id="navbar" class="navbar order-last order-lg-0 text-md-end">
-                    <ul>
-                    <li><a class="nav-link scrollto" href="/about/">О нас</a></li>
-                    <li><a class="nav-link scrollto" href="/gallery/">Галерея</a></li>
-                    <li><a class="nav-link scrollto" href="/articles/">Статьи</a></li>
-                    <li><a class="nav-link scrollto" href="/contact/">Контакты</a></li>
-                    <li><a class="nav-link scrollto" href="/store/">Магазин</a></li>
-                    {% if request.user.is_authenticated and request.user.is_admin %}
-                        <li><a class="nav-link scrollto" href="/products/">Продукция</a></li>
-                        <li><a class="nav-link scrollto" href="/orders/">Ордера</a></li>
-                        <li><a class="nav-link scrollto" href="/admin/">Админ</a></li>
-                    {% endif %}
-
-                    </ul>
-                </nav>
-            </div>
-        </div>
-        <div class="row justify-content-end">
-            <div class="row">
-                  <div class="row">
-                        <section class="breadcrumbs">
-                                <div class="col-3 d-flex justify-content-between align-items-center">
-                                    <ol>
-                                    {% if title == 'Главная' %}
-                                    <li><a href="{% url 'index' %}">{{ title }}</a></li>
-                                    {% else %}
-                                    <li><a href="{% url 'index' %}">{{ main }}</a></li>
-                                    <li> {{ title }}</li>
-                                    {% endif %}
-                                    </ol>
-                                </div>
-                        </section>
-                    </div>
-                    <div class="col"></div>
-                        {% if request.path == '/store/' %}
-                        <div class="col">
-                            <a href="{% url 'cart' %}">
-                                Сумма: {{ total_price }} руб.
-                                <i class="las la-shopping-cart la-2x link-success"></i>
-                            </a>
-                        </div>
+    <header id="header_3d" class="d-flex flex-wrap justify-content-center py-1 border-bottom">
+        <div class="container text-center">
+            <div class="row justify-content-start border-bottom">
+                <div class="col-6 col-md-3">
+                    <a class="las la-envelope" href="mailto:contact@example.com"> {{ email_store }} </a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a class="las la-phone-volume" href="mailto:contact@example.com">{{ phone }}</a>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a class="contact-info">
+                        {% if user.is_authenticated %}
+                            <span><a href="{% url 'profile' %}"><i class="las la-id-card"></i>{{ user.username }}</a></span>
+                            <a href="{% url 'logout' %}" class="link-danger ">Выйти</a>
+                            <a href="{% url 'cart' %}" class="las la-cart-arrow-down la-2x"></a>
+                        {% else %}
+                            <a href="{% url 'login' %}">Вы не вошли в систему. Войти</a>
                         {% endif %}
-                  </div>
+                    </a>
+                </div>
+                <div class="col-6 col-md-3 text-md-right">
+                    <a href="#" class="twitter"><i class="lab la-viber la-2x"></i></a>
+                    <a href="#" class="facebook"><i class="lab la-vk la-2x"></i></a>
+                    <a href="#" ><i class="lab la-whatsapp la-2x"></i></a>
+                    <a href="#" ><i class="lab la-telegram la-2x"></i></a>
+                </div>
             </div>
-        </div>
+            <div class="row">
+                <div class="col-5 text-md-center">
+                    <h1><a href="{% url 'index' %}" class="link-primary">{{ name_store }}</a></h1>
+                </div>
+                <div class="col-7 text-md-end">
+                    <nav id="navbar" class="navbar order-last order-lg-0 text-md-end">
+                        <ul>
+                        <li><a class="nav-link scrollto" href="/about/">О нас</a></li>
+                        <li><a class="nav-link scrollto" href="/gallery/">Галерея</a></li>
+                        <li><a class="nav-link scrollto" href="/articles/">Статьи</a></li>
+                        <li><a class="nav-link scrollto" href="/contact/">Контакты</a></li>
+                        <li><a class="nav-link scrollto" href="/store/">Магазин</a></li>
+                        {% if request.user.is_authenticated and request.user.is_admin %}
+                            <li><a class="nav-link scrollto" href="/products/">Продукция</a></li>
+                            <li><a class="nav-link scrollto" href="/orders/">Ордера</a></li>
+                            <li><a class="nav-link scrollto" href="/admin/">Админ</a></li>
+                        {% endif %}
+
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="row justify-content-end">
+                <div class="row">
+                      <div class="row">
+                            <section class="breadcrumbs">
+                                    <div class="col-3 d-flex justify-content-between align-items-center">
+                                        <ol>
+                                        {% if title == 'Главная' %}
+                                        <li><a href="{% url 'index' %}">{{ title }}</a></li>
+                                        {% else %}
+                                        <li><a href="{% url 'index' %}">{{ main }}</a></li>
+                                        <li> {{ title }}</li>
+                                        {% endif %}
+                                        </ol>
+                                    </div>
+                            </section>
+                        </div>
+                        <div class="col-8"></div>
+                            {% if request.path == '/store/' %}
+                            <div class="col">
+                                <a href="{% url 'cart' %}">
+                                    Сумма: {{ total_price }} руб.
+                                    <i class="las la-cart-arrow-down la-2x link-success"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                      </div>
+                </div>
+            </div>
+    </header>
+
+    <div class="container" style="min-height: 65vh;">
+        {% block content %}{% endblock %}
     </div>
 
-</header>
-
-<div class="container" style="min-height: 65vh;">
-    {% block content %}{% endblock %}
-</div>
     <!-- ======= Footer ======= -->
-<footer id="footer_3d" >
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3 col-md-6 footer_3d-contact">
-                <p>
-                    {{ city }} <br>
-                    <strong class="las la-user-astronaut la-2x"></strong>  {{ phone }}<br>
-                    <strong class="las la-envelope la-2x"></strong>  {{ email_store }} <br>
-                </p>
-            </div>
+    <footer id="footer_3d" >
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 footer_3d-contact">
+                    <p>
+                        {{ city }} <br>
+                        <strong class="las la-user-astronaut la-2x"></strong>  {{ phone }}<br>
+                        <strong class="las la-envelope la-2x"></strong>  {{ email_store }} <br>
+                    </p>
+                </div>
 
-            <div class="col-lg-3 col-md-6 footer_3d-links">
-                <h5>Наши услуги</h5>
-                <ul>
-                    <li><i class="bx bx-chevron-right"></i> <a href="#">3d печать различным пластиком</a></li>
-                    <li><i class="bx bx-chevron-right"></i> <a href="#">Моделирование по чертежам</a></li>
-                    <li><i class="bx bx-chevron-right"></i> <a href="#">Мелкосерийное производство</a></li>
-                </ul>
-            </div>
+                <div class="col-lg-3 col-md-6 footer_3d-links">
+                    <h5>Наши услуги</h5>
+                    <ul>
+                        <li><i class="bx bx-chevron-right"></i> <a href="#">3d печать различным пластиком</a></li>
+                        <li><i class="bx bx-chevron-right"></i> <a href="#">Моделирование по чертежам</a></li>
+                        <li><i class="bx bx-chevron-right"></i> <a href="#">Мелкосерийное производство</a></li>
+                    </ul>
+                </div>
 
-            <div class="col-lg-4 col-md-6 footer_3d-newsletter">
-                <h4>Подписка</h4>
-                <p>Чтобы подписаться на нашу рассылку, введите ваш email</p>
+                <div class="col-lg-4 col-md-6 footer_3d-newsletter">
+                    <h4>Подписка</h4>
+                    <p>Чтобы подписаться на нашу рассылку, введите ваш email</p>
 
-                <form action="" method="post" role="form" class="php-email-form">
-                    <input type="email" name="email"><input type="submit" value="Подписаться">
-                </form>
+                    <form action="" method="post" role="form" class="php-email-form">
+                        <input type="email" name="email"><input type="submit" value="Подписаться">
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="container d-md-flex py-4">
-        <div class="me-md-auto text-center text-md-start">
-            <div class="copyright">
-                &copy; Авторские права  <strong><span>{{name_store}}</span></strong>. Все права защищены.
-            </div>
-            <div class="credits">
+        <div class="container d-md-flex py-4">
+            <div class="me-md-auto text-center text-md-start">
+                <div class="copyright">
+                    &copy; Авторские права  <strong><span>{{name_store}}</span></strong>. Все права защищены.
+                </div>
+                <div class="credits">
+                </div>
             </div>
         </div>
-    </div>
-</footer>
+    </footer>
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center active"><i class="bi bi-arrow-up-short"></i></a>
 
     <!-- Bootstrap JS Files -->
@@ -175,7 +173,7 @@
 
     <script src="{% static 'js/main_store_3d.js' %}"></script>
     <script src="{% static 'js/listjs.init.js' %}"></script>
-<!--    <script src="{% static 'js/list.min.js' %}"></script>-->
+    <!--    <script src="{% static 'js/list.min.js' %}"></script>-->
 
 </body>
 

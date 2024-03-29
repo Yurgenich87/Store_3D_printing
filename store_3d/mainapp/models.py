@@ -73,14 +73,6 @@ class User(AbstractBaseUser):
         return self.is_admin
 
 
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    """Automatically registers a new user in the admin panel upon creation."""
-    if created:
-        from django.contrib import admin
-        admin.site.register(User)
-
-
 class Category(models.Model):
     """Model representing a category."""
     name = models.CharField(max_length=60, unique=True)
@@ -93,16 +85,26 @@ class Category(models.Model):
 class Product(models.Model):
     """Model representing a product."""
     name = models.CharField(max_length=100)
-    description = models.CharField(max_length=100)
+    description = models.TextField()
     price = models.IntegerField()
-    quantity = models.IntegerField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=0)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, default=1)
     image = models.ImageField(upload_to='product_images/')
     at_data = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        """Returns the name of the Product ."""
+        """Returns the name of the Product."""
         return self.name
+
+
+class Article(models.Model):
+    """Model representing an article."""
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+
+    def __str__(self):
+        """Returns the title of the article."""
+        return self.title
 
 
 class Order(models.Model):
@@ -121,16 +123,6 @@ class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=PENDING)
     at_data = models.DateTimeField(auto_now_add=True)
-
-
-class Article(models.Model):
-    """Model representing an article."""
-    title = models.CharField(max_length=200)
-    content = models.TextField()
-
-    def __str__(self):
-        """Returns the title of the article."""
-        return self.title
 
 
 class Cart(models.Model):

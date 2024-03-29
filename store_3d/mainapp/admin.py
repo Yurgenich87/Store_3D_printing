@@ -3,6 +3,12 @@ from django.contrib.auth.admin import UserAdmin
 from .models import User, Product, Order, Cart, CartItem, Category
 
 
+@admin.action(description="Сбросить количество в ноль")
+def reset_quantity(modeladmin, request, queryset):
+    """Admin action to reset the quantity of selected items to zero"""
+    queryset.update(quantity=0)
+
+
 class CustomUserAdmin(UserAdmin):
     """User model registration"""
     list_display = ('username', 'email', 'phone', 'is_active', 'is_admin', 'at_data')
@@ -34,6 +40,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'price', 'quantity', 'at_data')
     search_fields = ('name', 'description')
     filter_horizontal = ()
+    actions = [reset_quantity]
     fieldsets = (
         ('Товар', {
             'fields': ('name', 'price',)

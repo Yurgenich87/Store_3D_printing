@@ -1,7 +1,7 @@
-import json
 import logging
 import os
 import random
+import time
 from datetime import timedelta, datetime
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
@@ -10,9 +10,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.mail import send_mail
 from django.db.models import F
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect, Http404, HttpResponseBadRequest, \
+    HttpResponseNotAllowed
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import floatformat
@@ -20,10 +19,10 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from rest_framework import generics
-
 from .models import Article, CartItem, Order, Cart, Product, User, Category
 from .forms import UserForm, LoginForm, UserProfileForm, OrderForm, ProductForm, ImageForm
 from .serializers import UserSerializer, ProductSerializer, OrderSerializer,  CategoriesSerializer
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,27 +31,32 @@ COMMON_CONTENT = settings.COMMON_CONTENT
 
 # __________________________________________________________API_________________________________________________________
 class UserListAPIView(generics.ListAPIView):
+    """API view to list users."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
 class ProductListAPIView(generics.ListAPIView):
+    """API view to list products."""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
 
 class OrderListAPIView(generics.ListAPIView):
+    """API view to list orders."""
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
 
 class CategoriesListAPIView(generics.ListAPIView):
+    """API view to list categories."""
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
 
 
 # ________________________________________________________General_____________________________________________________
 def login_view(request):
+    """View function for user login."""
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -61,9 +65,11 @@ def login_view(request):
             user = authenticate(request, email=email, password=password)
             if user is not None:
                 login(request, user)
+                logger.info(f"User '{user.email}' logged in successfully.")
                 return redirect('index')
             else:
-                messages.add_message(request, messages.ERROR, 'Неверный логин или пароль.')
+                logger.error("Login failed for email: %s", email)
+                messages.add_message(request, messages.ERROR, 'Invalid email or password.')
                 return redirect('login')
     else:
         form = LoginForm()
@@ -72,43 +78,44 @@ def login_view(request):
         'title': 'Вход',
         **COMMON_CONTENT
     }
+    logger.debug(f"Page '{content['title']}' loaded successfully.")
     return render(request, 'mainapp/login.html', content)
 
 
 def register(request):
-    """Registration form"""
+    """View function for user registration."""
     form = UserForm()
     if request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
-            logger.info(f' Валидация формы успешна')
+            logger.info('Form validation successful')
             user = form.save(commit=False)
             user.password = make_password(form.cleaned_data['password'])
             user.save()
             username = form.cleaned_data.get('username')
-            logger.info(f'Пользователь {username} успешно создан')
+            logger.info(f'User "{username}" successfully created')
             return redirect('login')
         else:
-            logger.info(f'Ошибка валидации формы: {form.errors}')
+            logger.info(f'Form validation error: {form.errors}')
     content = {
         'form': form,
         'title': 'Регистрация',
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    logger.debug(f'Page "{content["title"]}" loaded successfully')
     return render(request, 'mainapp/register.html', content)
 
 
 def logout_view(request):
-
+    """View function for logging out the user."""
     logout(request)
-    logger.info('Пользователь успешно вышел из системы')
+    logger.debug('User successfully logged out')
     return redirect('index')
 
 
 @login_required
 def profile(request):
-    """User profile edit menu"""
+    """View function for user profile edit menu."""
     user = request.user
     content = {
         'user': user,
@@ -116,13 +123,15 @@ def profile(request):
         **COMMON_CONTENT
     }
 
-    logger.debug(f"Страница профиля пользователя: {user} успешно загружена!")
+    logger.debug(f"User profile page for {user} loaded successfully.")
     return render(request, 'mainapp/profile.html', content)
 
 
+@login_required
 def edit_profile(request):
+    """View function for editing user profile."""
     user = request.user
-    logger.debug(f'Пользователь {user} редактирует свой профиль')
+    logger.debug(f'User {user} is editing their profile.')
 
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=user)
@@ -131,18 +140,17 @@ def edit_profile(request):
             if new_password:
                 user.set_password(new_password)
             form.save()
-            logger.debug(f'Успешное обновление данных профиля {user}')
-
+            logger.debug(f'Profile data for {user} updated successfully.')
             return redirect('profile')
         else:
-            logger.error(f'Неверные данные в форме: {form.errors}')
+            logger.error(f'Invalid data in the form: {form.errors}')
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
-
     else:
         form = UserProfileForm(instance=user)
+
     content = {
         'form': form,
-        'title': 'Страница профиля',
+        'title': 'Редактирование профиля',
         **COMMON_CONTENT
     }
     return render(request, 'mainapp/profile.html', content)
@@ -150,14 +158,17 @@ def edit_profile(request):
 
 @login_required
 def delete_profile(request, user=None):
+    """View function for deleting user profile."""
     if request.method == 'POST':
         user = request.user
         user.delete()
         logout(request)
+        logger.info(f"User '{user}' profile deleted successfully.")
         return redirect('index')
+
     content = {
         'user': user,
-        'title': 'Страница профиля',
+        'title': 'Удаление профиля',
         **COMMON_CONTENT
     }
 
@@ -166,12 +177,12 @@ def delete_profile(request, user=None):
 
 # ________________________________________________________Menu_____________________________________________________
 def index(request):
-    """Main page"""
+    """View function for the main page."""
     if request.method == 'POST':
         form = UserForm(request.POST)
         if form.is_valid():
             form.save()
-
+            logger.info("New user registered successfully.")
             return redirect('index')
 
     else:
@@ -180,14 +191,14 @@ def index(request):
     content = {
         'form': form,
         'title': 'Главная',
-
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    logger.debug(f"Page '{content['title']}' loaded successfully.")
     return render(request, 'mainapp/index.html', content)
 
 
 def gallery(request):
+    """View function for the gallery page."""
     gallery_folder = r'E:\PYTHON\Store_3d_printing\store_3d\static\img\gallery'
     file_names = os.listdir(gallery_folder)
     gallery_range = range(1, len(file_names) + 1)
@@ -196,76 +207,80 @@ def gallery(request):
         'gallery_range': gallery_range,
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    logger.debug(f"Page '{content['title']}' loaded successfully.")
     return render(request, 'mainapp/gallery.html', content)
 
 
 def articles(request):
+    """View function for displaying articles."""
     articles = Article.objects.all()
     content = {
         'title': 'Статьи',
         'articles': articles,
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    logger.debug(f"Page '{content['title']}' loaded successfully.")
     return render(request, 'mainapp/articles.html', content)
 
 
 def create_article(request):
+    """View function for creating an article."""
     context = {
-        'title': 'Создание статьи',
+        'title': 'Добавление статьи',
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {context['title']} успешно загружена!")
+    logger.debug(f"Page '{context['title']}' loaded successfully.")
     return render(request, 'mainapp/create_article.html', context)
 
 
 def contact(request):
+    """View function for displaying contact page."""
     content = {
         'title': 'Контакты',
         **COMMON_CONTENT
     }
 
-    logger.debug(f"Страница {content['title']} успешно загружена!")
-    return render(request, 'mainapp/contact.html', content, )
+    logger.debug(f"Page '{content['title']}' loaded successfully!")
+    return render(request, 'mainapp/contact.html', content)
 
 
-# Доработать
 @csrf_exempt
 def contact_form_submit(request):
+    """View function for submitting contact form."""
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        subject = request.POST.get('subject')
+        email = "store3dzepko@mail.ru"
+        email_user = request.POST.get('email')
+        subject = f"{request.POST.get('name')}, ({email_user})"
         message = request.POST.get('message')
-        content = {
-            'title': 'Контакты',
-            **COMMON_CONTENT
-        }
-        logger.debug(f'Выполняется отправка сообщения пользователем c email: {email}')
+
+        logger.debug(f'Sending message from user with email: {email_user}')
         send_mail(
             subject,
             message,
             email,
-            ['store3dzepko'],
+            ['store3dzepko@mail.ru'],
             fail_silently=False,
         )
-        logger.debug('Сообщение отправлено')
-        return JsonResponse({'success': True})
+        logger.debug('Message sent successfully')
+        return JsonResponse({'success': True, 'message': 'Message sent successfully'})
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
 
 
 def about(request):
+    """View function for the about page."""
     logger.debug('About page accessed')
     content = {
         'title': 'О нас',
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    logger.debug(f"Page {content['title']} loaded successfully!")
     return render(request, 'mainapp/about.html', content)
 
 
 @login_required
 def store(request):
+    """View function for the store page."""
     user = request.user
     products = Product.objects.all()
     cart_products = CartItem.objects.filter(cart__user=user)
@@ -278,12 +293,14 @@ def store(request):
         **COMMON_CONTENT
     }
 
-    logger.debug(f"Страница {context['title']} успешно загружена!, Вошел пользователь: {user.id}")
+    logger.debug(f"Page {context['title']} loaded successfully!, User logged in: {user.id}")
     return render(request, 'mainapp/store.html', context)
 
 
 # ________________________________________________________Product_____________________________________________________
+@login_required
 def manage_products(request):
+    """View function for managing products."""
     products = Product.objects.all()
 
     content = {
@@ -292,12 +309,14 @@ def manage_products(request):
         **COMMON_CONTENT
     }
 
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    logger.debug(f"Page {content['title']} loaded successfully!")
     return render(request, 'mainapp/manage_products.html', content)
 
 
+@login_required
 @csrf_exempt
 def create_product(request):
+    """View function for creating a new product."""
     if request.method == 'POST':
         if request.headers.get('X-CSRFToken') != request.COOKIES.get('csrftoken'):
             return JsonResponse({'error': 'CSRF token mismatch'}, status=403)
@@ -320,80 +339,93 @@ def create_product(request):
         return JsonResponse({'error': 'Only POST requests are allowed'}, status=405)
 
 
+@login_required
+@csrf_exempt
 def update_product(request, product_id):
-    logger.info(f'Обновление данных продукта {product_id}')
+    logger.info(f'Updating product data: {product_id}')
     product = get_object_or_404(Product, pk=product_id)
 
     if request.method == 'POST':
-        text_form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, instance=product)
 
-        if text_form.is_valid():
-            text_form.save()
+        if form.is_valid():
+            form.save()
 
             if 'image' in request.FILES:
                 image = request.FILES['image']
                 product.image.save(image.name, image)
                 product.save()
 
-            logger.info(f'Продукт {product.name} успешно обновлен.')
+            logger.info(f'Product {product.name} successfully updated.')
             return JsonResponse({'message': 'Product updated successfully'}, status=200)
         else:
-            errors = text_form.errors
+            errors = form.errors
+            logger.error(f'Error updating product {product_id}: {errors}')
             return JsonResponse({'error': errors}, status=400)
 
     else:
+        logger.warning(f'Invalid request method for updating product {product_id}: {request.method}')
         return JsonResponse({'error': 'POST request expected'}, status=405)
 
 
 @require_http_methods(["POST", "PUT"])
 def delete_product(request, product_id):
+    """View function for deleting a product."""
     product = get_object_or_404(Product, pk=product_id)
     if request.method == 'POST' or request.method == 'PUT':
         product.delete()
+        logger.info(f"Product with ID {product_id} deleted successfully.")
         return JsonResponse({'success': True})
-
+    logger.error("Invalid HTTP method used for delete_product view.")
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 def filter_products(request, days):
-    """Filter products in products """
+    """View function to filter products based on a specified number of days."""
     try:
         days = int(days)
+        if days > 0:
+            start_date = timezone.now() - timezone.timedelta(days=days)
+            filtered_products = Product.objects.filter(at_data__gte=start_date)
+            products = filtered_products
+            content = {
+                'title': 'Filter Products',
+                'products': products,
+                **COMMON_CONTENT
+            }
+            logger.debug("Filter applied successfully to products!")
+            return render(request, 'mainapp/manage_products.html', content)
+        else:
+            return redirect('manage_products')
     except ValueError:
-        logger.debug(f'Количечтво дней отсутствует')
-
-    start_date = timezone.now() - timezone.timedelta(days=days)
-    logger.debug(f'Фильтр: {start_date = }')
-
-    filtered_products = Product.objects.filter(at_data__gte=start_date)
-    products = filtered_products
-    content = {
-        'title': 'Фильтр товаров',
-        'products': products,
-        **COMMON_CONTENT
-    }
-    logger.debug(f"Фильтр в продукции применен успешно!")
-    return render(request, 'mainapp/manage_products.html', content)
+        logger.error("Invalid number of days provided: %s", days)
+        return redirect('manage_products')
 
 
 # ________________________________________________________Orders_____________________________________________________
+@login_required
+@csrf_exempt
 def manage_orders(request):
+    """View function to manage orders."""
     orders = Order.objects.all()
+
     context = {
         'orders': orders,
-        'title': 'Мои заказы',
+        'title': 'My Orders',
         **COMMON_CONTENT
     }
-    logger.debug(f"Страница {context['title']} успешно загружена")
+
+    logger.debug(f"Page {context['title']} loaded successfully.")
     return render(request, 'mainapp/manage_orders.html', context)
 
 
 def orders(request, pk=None):
+    """View function to display orders."""
     if pk:
         order = get_object_or_404(Order, pk=pk)
         context = {
             'order': order,
-            'title': f'Заказ #{order.pk}',
+            'title': f'Order #{order.pk}',
             **COMMON_CONTENT
         }
         template_name = 'mainapp/manage_orders.html'
@@ -401,15 +433,17 @@ def orders(request, pk=None):
         orders = Order.objects.all()
         context = {
             'orders': orders,
-            'title': 'Список заказов',
+            'title': 'Order List',
             **COMMON_CONTENT
         }
         template_name = 'mainapp/manage_orders.html'
 
+    logger.debug(f"Page {context['title']} loaded successfully.")
     return render(request, template_name, context)
 
 
 def randomize_order_dates(request):
+    """View function to randomize order dates."""
     start_date = timezone.make_aware(datetime(2022, 1, 1, 13, 4, 4))
     end_date = timezone.make_aware(datetime(2024, 3, 18, 13, 4, 4))
 
@@ -425,6 +459,7 @@ def randomize_order_dates(request):
 
 
 def create_order(request):
+    """View function for creating an order."""
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
@@ -435,6 +470,7 @@ def create_order(request):
                 user=user,
                 product=product,
             )
+            logger.info("Order created successfully.")
             return redirect('manage_orders')
     else:
         form = OrderForm()
@@ -449,6 +485,7 @@ def create_order(request):
 @csrf_exempt
 @require_POST
 def update_order(request, order_id):
+    """View function for updating order data."""
     logger.info(f'Updating order data for order {order_id}')
     order = get_object_or_404(Order, pk=order_id)
 
@@ -465,9 +502,11 @@ def update_order(request, order_id):
 
 @csrf_exempt
 def delete_order(request, order_id):
+    """View function for deleting an order."""
     order = get_object_or_404(Order, pk=order_id)
     if request.method == 'POST':
         order.delete()
+        logger.info(f"Order {order_id} deleted successfully.")
         return redirect('manage_orders')
     context = {
         'order': order,
@@ -479,36 +518,39 @@ def delete_order(request, order_id):
 
 @login_required
 def filter_order(request, days):
-    """Filter products in orders"""
-    logger.debug(f'Фильтр: {request = } {days = }')
+    """View function to filter orders based on a specified number of days."""
     try:
         days = int(days)
+        if days > 0:
+            start_date = timezone.now() - timezone.timedelta(days=days)
+            filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date)
+
+            unique_products = set()
+            unique_orders = []
+            for order in filtered_orders:
+                if order.product not in unique_products:
+                    unique_products.add(order.product)
+                    unique_orders.append(order)
+
+            content = {
+                'title': 'Filter Orders',
+                'orders': unique_orders,
+                **COMMON_CONTENT
+            }
+            logger.debug("Filter applied successfully to orders!")
+            return render(request, 'mainapp/manage_orders.html', content)
+        else:
+            logger.debug("Invalid number of days provided: %s", days)
+            return render(request, 'mainapp/manage_orders.html', {'title': 'Filter Orders', **COMMON_CONTENT})
     except ValueError:
-        logger.debug(f'Количество дней отсутствует')
-
-    start_date = timezone.now() - timezone.timedelta(days=days)
-
-    filtered_orders = Order.objects.filter(user=request.user, at_data__gte=start_date)
-
-    unique_products = set()
-    unique_orders = []
-    for order in filtered_orders:
-        if order.product not in unique_products:
-            unique_products.add(order.product)
-            unique_orders.append(order)
-
-    content = {
-        'title': 'Фильтр заказов',
-        'orders': unique_orders,
-        **COMMON_CONTENT
-    }
-    logger.debug(f"Фильтр в Ордерах применен успешно!")
-    return render(request, 'mainapp/manage_orders.html', content)
+        logger.error("Invalid number of days provided: %s", days)
+        return render(request, 'mainapp/manage_orders.html', {'title': 'Filter Orders', **COMMON_CONTENT})
 
 
 # ________________________________________________________Cart_____________________________________________________
 @login_required
 def view_cart(request):
+    """View function for displaying the user's cart."""
     user = request.user
     products = Product.objects.filter(cart__user=user).annotate(formatted_price=F('price'))
     cart_products = CartItem.objects.filter(cart__user=user)
@@ -521,22 +563,22 @@ def view_cart(request):
         'cart_products': cart_products,
         'total_price': total_price,
         'cart_products_length': cart_products_length,
-        'title': 'Корзина',
+        'title': 'Cart',
         **COMMON_CONTENT
     }
 
-    logger.debug(f"Страница {context['title']} успешно загружена!")
-
+    logger.debug(f"Page {context['title']} loaded successfully!")
     return render(request, 'mainapp/cart.html', context)
 
 
 @login_required
 def add_to_cart(request, product_id):
+    """View function for adding a product to the user's cart."""
     if request.method == 'POST':
         try:
             user = request.user
             product = Product.objects.get(pk=product_id)
-            quantity = 1  # Устанавливаем количество товара равным 1
+            quantity = 1  # Set the quantity of the product to 1
 
             cart, created = Cart.objects.get_or_create(user=user)
 
@@ -546,28 +588,29 @@ def add_to_cart(request, product_id):
                 cart_item.quantity += quantity
                 cart_item.save()
 
-            # Вне зависимости от создания нового элемента корзины, создаем заказ
+            # Regardless of creating a new cart item, create an order
             order = Order(user=user, product=product, at_data=timezone.now())
             order.save()
 
-            # Пересчитываем сумму заказа после добавления товара в корзину
+            # Recalculate the total price of the cart after adding the product
             cart.total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
             cart.save()
 
-            logger.debug(f"Товар {product.id} добавлен в корзину")
+            logger.debug(f"Product {product.id} added to the cart")
 
-            # Получаем текущее количество записей в корзине и отправляем его в ответе
+            # Get the current number of items in the cart and send it in the response
             cart_item_count = cart_item.quantity
             logger.debug(f"cart_item_count {cart_item_count = }, {cart_item.quantity = }")
             return JsonResponse({'success': True, 'cartItemCount': cart_item_count})
 
         except Exception as e:
-            logger.debug(f"Товар {product.id} не добавлен в корзину: {e}")
+            logger.debug(f"Product {product_id} not added to the cart: {e}")
             return JsonResponse({'success': False, 'error': str(e)})
 
 
 @login_required
 def remove_from_cart(request, product_id):
+    """View function for removing a product from the user's cart."""
     if request.method == 'POST':
         try:
             user = request.user
@@ -583,7 +626,7 @@ def remove_from_cart(request, product_id):
                 else:
                     cart_item.save()
 
-                logger.debug(f"Товар {product.id} удален из корзины")
+                logger.debug(f"Product {product.id} removed from the cart")
 
                 cart.total_price = sum(item.product.price * item.quantity for item in cart.cartitem_set.all())
                 cart.save()
@@ -596,17 +639,37 @@ def remove_from_cart(request, product_id):
 
                 cart_item_count = CartItem.objects.filter(cart=cart).count()
                 return JsonResponse({'success': True, 'cartItemCount': cart_item_count})
-            else:
-                logger.debug(f"Товар {product.id} не найден в корзине")
-                return JsonResponse({'success': False, 'error': 'Товар не найден в корзине'})
 
         except Exception as e:
-            logger.debug(f"Ошибка при удалении товара из корзины: {e}")
-            return JsonResponse({'success': False, 'error': str(e)})
+            logger.debug(f"Error removing product from the cart: {e}")
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def filter_products_in_cart(request, days):
+    """View function to filter products in the shopping cart."""
+    try:
+        days = int(days)
+    except ValueError:
+        logger.debug(f'Number of days is missing')
+
+    start_date = timezone.now() - timezone.timedelta(days=days)
+    logger.debug(f'Filter: {start_date = }')
+
+    filtered_products = Product.objects.filter(user=request.user, at_data__gte=start_date)
+    products = filtered_products
+    content = {
+        'title': 'Filter Products',
+        'products': products,
+        **COMMON_CONTENT
+    }
+    logger.debug(f"Page {content['title']} loaded successfully!")
+
+    return render(request, 'mainapp/cart.html', content)
 
 
 @login_required
 def purchase(request):
+    """View function for processing the purchase of items in the user's cart."""
     user = request.user
 
     products = Product.objects.filter(cart__user=user).annotate(formatted_price=F('price'))
@@ -616,18 +679,18 @@ def purchase(request):
     cart_products_length = sum(item.quantity for item in cart_products)
 
     if request.method == 'POST':
-        # Обработка данных формы и выбранного способа оплаты
-        payment_method = request.POST.get('payment_method')
-        # Дополнительная логика, например, сохранение заказа в базе данных
+        try:
+            payment_method = request.POST.get('payment_method')
 
-        # Изменение статуса заказа на "Completed"
-        order = Order.objects.filter(user=request.user, status='Pending').last()
-        if order:
-            order.status = 'Completed'
-            order.save()
+            order = Order.objects.filter(user=request.user, status='Pending').last()
+            if order:
+                order.status = 'Completed'
+                order.save()
 
-        # Перенаправление на другую страницу (например, страницу подтверждения заказа)
-        return redirect('order_confirmation')
+            return redirect('order_confirmation')
+        except Exception as e:
+            logger.error(f"Error processing purchase: {e}")
+
     context = {
         'user': user,
         'products': products,
@@ -638,26 +701,22 @@ def purchase(request):
         **COMMON_CONTENT
     }
 
-    return render(request, 'mainapp/purchase.html')
+    return render(request, 'mainapp/purchase.html', context)
 
 
-def filter_products_in_cart(request, days):
-    """Filter the products in the shopping cart"""
-    try:
-        days = int(days)
-    except ValueError:
-        logger.debug(f'Количечтво дней отсутствует')
+@csrf_exempt
+@login_required
+def process_payment(request):
+    user = request.user
+    logger.info(f'{user =}')
+    cart = Cart.objects.get(user=user)
 
-    start_date = timezone.now() - timezone.timedelta(days=days)
-    logger.debug(f'Фильтр: {start_date = }')
+    cart_items = cart.cartitem_set.all()
+    cart_items.delete()
+    logger.debug(f'Корзина успешно очищена, после покупки')
 
-    filtered_products = Product.objects.filter(user=request.user, at_data__gte=start_date)
-    products = filtered_products
-    content = {
-        'title': 'Фильтр товаров',
-        'products': products,
-        **COMMON_CONTENT
-    }
-    logger.debug(f"Страница {content['title']} успешно загружена!")
+    Order.objects.filter(user=user).update(status=Order.COMPLETED)
+    logger.debug(f'Статус ордера изменен на: COMPLETED')
 
-    return render(request, 'mainapp/cart.html', content)
+    response_data = {'redirect_url': '/store/'}
+    return JsonResponse(response_data)

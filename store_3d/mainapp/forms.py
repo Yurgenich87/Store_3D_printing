@@ -34,13 +34,15 @@ class UserProfileForm(forms.ModelForm):
             self.fields['postal_code'].initial = self.instance.postal_code
 
     def clean(self):
+        """Clean method to validate password confirmation"""
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         password_confirmation = cleaned_data.get("password_confirmation")
 
         if password and password != password_confirmation:
-            raise forms.ValidationError("Пароли не совпадают")
+            raise forms.ValidationError("Passwords do not match")
         return cleaned_data
+
 
 class UserForm(forms.ModelForm):
     """ Form for creating new users"""
@@ -85,6 +87,7 @@ class ProductForm(forms.ModelForm):
 
 
 class ImageForm(forms.Form):
+    """Form for uploading images"""
     image = forms.ImageField()
 
 

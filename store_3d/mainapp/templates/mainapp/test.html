@@ -1,23 +1,663 @@
+<html><head><meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация</title>
+
+  <!-- Favicons -->
+  <link href="/static/img/fav_icon.png" rel="icon">
+  <link href="/static/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+    <!-- Bootstrap CSS Files -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/bootstrap.rtl.css" rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <link href="/static/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="/static/vendor/animate.css/animate.min.css" rel="stylesheet">
+    <link href="/static/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="/static/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+    <link href="/static/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="/static/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+    <link href="/static/css/line-awesome.min.css" rel="stylesheet">
+    <link href="/static/vendor/Datepicker.js-master/dist/css/datepicker.material.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link rel="stylesheet" type="text/css" href="/static/css/style_3d.css?version=1.0">
+
+</head><body>
+<header id="header_3d" class="d-flex flex-wrap justify-content-center py-1 border-bottom">
+    <div class="container text-center">
+        <div class="row justify-content-start border-bottom">
+            <div class="col-6 col-md-3">
+                <a class="las la-envelope" href="mailto:contact@example.com"> store3dzepko@yandex.ru </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a class="las la-phone-volume" href="mailto:contact@example.com">+7 999 678 43 20</a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a class="contact-info">
+
+                        </a><a href="/login/">Вы не вошли в систему. Войти</a>
+
+
+            </div>
+            <div class="col-6 col-md-3 text-md-right">
+                <a href="#" class="twitter"><i class="lab la-viber la-2x"></i></a>
+                <a href="#" class="facebook"><i class="lab la-vk la-2x"></i></a>
+                <a href="#"><i class="lab la-whatsapp la-2x"></i></a>
+                <a href="#"><i class="lab la-telegram la-2x"></i></a>
+            </div>
+        </div>
         <div class="row">
-          {% for product in products %}
-          <div class="col-md-6 mb-4">
-            <div class="card">
-              <div class="card-body text-center">
-                <h3 class="card-title">{{ product.name }}</h3>
-                <p class="card-text">{{ product.description }}</p>
-                <p>Цена: {{ product.price }} руб.</p>
-                <p>Количество: {{ product.quantity }} шт.</p>
-                <form method="post" class="action-form">
-                  {% csrf_token %}
-                  <input type="hidden" name="product_id" value="{{ product.pk }}">
-                  <button type="submit" name="update_product" class="btn-primary">Редактировать</button>
-                </form>
-                <form action="{% url 'delete_product' product.id %}" method="post" class="action-form">
-                  {% csrf_token %}
-                  <button type="submit" class="btn-primary">Удалить</button>
-                </form>
+            <div class="col-5 text-md-center">
+                <h1><a href="/" class="link-primary">3D Master</a></h1>
+            </div>
+            <div class="col-7 text-md-end">
+                <nav id="navbar" class="navbar order-last order-lg-0 text-md-end">
+                    <ul>
+                    <li><a class="nav-link scrollto" href="/about/">О нас</a></li>
+                    <li><a class="nav-link scrollto" href="/gallery/">Галерея</a></li>
+                    <li><a class="nav-link scrollto" href="/articles/">Статьи</a></li>
+                    <li><a class="nav-link scrollto" href="/contact/">Контакты</a></li>
+                    <li><a class="nav-link scrollto" href="/store/">Магазин</a></li>
+
+
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <div class="row justify-content-end">
+            <div class="row">
+                  <div class="row">
+                        <section class="breadcrumbs">
+                                <div class="col-3 d-flex justify-content-between align-items-center">
+                                    <ol>
+
+                                    <li><a href="/">Main</a></li>
+                                    <li> Регистрация</li>
+
+                                    </ol>
+                                </div>
+                        </section>
+                    </div>
+                    <div class="col-8"></div>
+
+                  </div>
+            </div>
+        </div>
+
+
+</header>
+
+<div class="container" style="min-height: 65vh;">
+
+<section id="create-user" class="appointment section-bg">
+  <div class="container">
+    <div class="section-title">
+      <h2>Регистрация</h2>
+    </div>
+      <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+          <form action="/register/" method="post" role="form">
+            <input type="hidden" name="csrfmiddlewaretoken" value="6zJq83Jln0ogRRrW7HH0Tfs24qJT5FHljVQ3TyR5WzxnZLx7WYPA5XVCdqoaMrZ2">
+            <div class="row justify-content-center">
+              <div class="col-md-6 text-center">
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label for="id_username"></label>
+                  <input type="text" name="username" placeholder="Ваш ник" maxlength="100" required="" id="id_username">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label for="id_password"></label>
+                  <input type="password" name="password" placeholder="Ваш пароль" maxlength="128" required="" id="id_password">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label for="id_email"></label>
+                  <input type="email" name="email" placeholder="Ваш еmail" maxlength="254" required="" id="id_email">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label for="id_phone"></label>
+                  <input type="text" name="phone" placeholder="Ваш телефон" maxlength="100" required="" id="id_phone">
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+
+
+                </div>
               </div>
             </div>
-          </div>
-          {% endfor %}
+            <div class="col">
+              <button type="submit" class="blue">Зарегистироваться</button>
+            </div>
+          </form>
         </div>
+      </div>
+  </div>
+</section>
+
+</div>
+    <!-- ======= Footer ======= -->
+<footer id="footer_3d">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 footer_3d-contact">
+                <p>
+                    Novokuznetsk <br>
+                    <strong class="las la-user-astronaut la-2x"></strong>  +7 999 678 43 20<br>
+                    <strong class="las la-envelope la-2x"></strong>  store3dzepko@yandex.ru <br>
+                </p>
+            </div>
+
+            <div class="col-lg-3 col-md-6 footer_3d-links">
+                <h5>Наши услуги</h5>
+                <ul>
+                    <li><i class="bx bx-chevron-right"></i> <a href="#">3d печать различным пластиком</a></li>
+                    <li><i class="bx bx-chevron-right"></i> <a href="#">Моделирование по чертежам</a></li>
+                    <li><i class="bx bx-chevron-right"></i> <a href="#">Мелкосерийное производство</a></li>
+                </ul>
+            </div>
+
+            <div class="col-lg-4 col-md-6 footer_3d-newsletter">
+                <h4>Подписка</h4>
+                <p>Чтобы подписаться на нашу рассылку, введите ваш email</p>
+
+                <form action="" method="post" role="form" class="php-email-form">
+                    <input type="email" name="email"><input type="submit" value="Подписаться">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container d-md-flex py-4">
+        <div class="me-md-auto text-center text-md-start">
+            <div class="copyright">
+                © Авторские права  <strong><span>3D Master</span></strong>. Все права защищены.
+            </div>
+            <div class="credits">
+            </div>
+        </div>
+    </div>
+</footer>
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Bootstrap JS Files -->
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+
+
+    <!-- Vendor JS Files -->
+    <script src="/static/vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="/static/vendor/purecounter/purecounter_vanilla.js"></script>
+    <script src="/static/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="/static/vendor/php-email-form/validate.js"></script>
+    <script src="/static/js/jquery-3.7.1.js"></script>
+    <script src="/static/vendor/Datepicker.js-master/dist/datepicker.js"></script>
+    <!-- Template Main JS File -->
+
+    <script src="/static/js/main_store_3d.js"></script>
+    <script src="/static/js/listjs.init.js"></script>
+<!--    <script src="/static/js/list.min.js"></script>-->
+
+
+
+<link rel="stylesheet" href="/static/debug_toolbar/css/print.css" media="print">
+<link rel="stylesheet" href="/static/debug_toolbar/css/toolbar.css">
+
+
+<script type="module" src="/static/debug_toolbar/js/toolbar.js" async=""></script>
+
+<div id="djDebug" class="" dir="ltr" data-store-id="4746a42c28d54b5984489798ad2c24c3" data-render-panel-url="/__debug__/render_panel/" data-sidebar-url="/__debug__/history_sidebar/" data-default-show="true" data-update-on-fetch="False">
+  <div class="djdt-hidden" id="djDebugToolbar">
+    <ul id="djDebugPanelList">
+      <li><a id="djHideToolBarButton" href="#" title="Скрыть панель">Скрыть »</a></li>
+
+
+
+<li id="djdt-HistoryPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtHistoryPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="История" class="HistoryPanel">
+
+  История
+
+
+      <br><small>/register/</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-VersionsPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtVersionsPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Версии" class="VersionsPanel">
+
+  Версии
+
+
+      <br><small>Django 5.0.3</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-TimerPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtTimerPanel" checked="" title="Отключить для последующих запросов">
+
+    <div class="djdt-contentless">
+
+  Время
+
+
+      <br><small>Итого: 16.06ms</small>
+
+
+
+    </div>
+
+</li>
+
+
+
+
+<li id="djdt-SettingsPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtSettingsPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Settings from store_3d.settings" class="SettingsPanel">
+
+  Настройки
+
+
+
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-HeadersPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtHeadersPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Заголовки" class="HeadersPanel">
+
+  Заголовки
+
+
+
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-RequestPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtRequestPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Запрос" class="RequestPanel">
+
+  Запрос
+
+
+      <br><small>register</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-SQLPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtSQLPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="SQL queries from 0 connections" class="SQLPanel">
+
+  SQL
+
+
+      <br><small>0 queries in 0.00ms</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-StaticFilesPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtStaticFilesPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Статические файлы (найдено 133, используется 24)" class="StaticFilesPanel">
+
+  Статические файлы
+
+
+      <br><small> 24 файла используется</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-TemplatesPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtTemplatesPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Шаблоны (обработано 10)" class="TemplatesPanel">
+
+  Шаблоны
+
+
+      <br><small>mainapp/register.html</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-CachePanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtCachePanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Обращения к кэшу от 1 бэкенда" class="CachePanel">
+
+  Кэш
+
+
+      <br><small>0 обращений за 0.00ms</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-SignalsPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtSignalsPanel" checked="" title="Отключить для последующих запросов">
+
+    <a href="#" title="Сигналы" class="SignalsPanel">
+
+  Сигналы
+
+
+      <br><small>34 получателя 15 сигнала(ов)</small>
+
+
+
+    </a>
+
+</li>
+
+
+
+
+<li id="djdt-RedirectsPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtRedirectsPanel" title="Включить для последующих запросов">
+
+    <div class="djdt-contentless djdt-disabled">
+
+  Перехват редиректов
+
+
+    </div>
+
+</li>
+
+
+
+
+<li id="djdt-ProfilingPanel" class="djDebugPanelButton">
+  <input type="checkbox" data-cookie="djdtProfilingPanel" title="Включить для последующих запросов">
+
+    <div class="djdt-contentless djdt-disabled">
+
+  Профилирование
+
+
+    </div>
+
+</li>
+
+
+    </ul>
+  </div>
+  <div class="" id="djDebugToolbarHandle" style="top: 434px;">
+    <div title="Показать панель" id="djShowToolBarButton">
+      <span id="djShowToolBarD">D</span><span id="djShowToolBarJ">J</span>DT
+    </div>
+  </div>
+
+
+
+
+
+  <div id="HistoryPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>История</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="VersionsPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Версии</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+  <div id="SettingsPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Settings from store_3d.settings</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="HeadersPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Заголовки</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="RequestPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Запрос</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="SQLPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>SQL queries from 0 connections</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="StaticFilesPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Статические файлы (найдено 133, используется 24)</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="TemplatesPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Шаблоны (обработано 10)</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="CachePanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Обращения к кэшу от 1 бэкенда</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+  <div id="SignalsPanel" class="djdt-panelContent djdt-hidden">
+    <div class="djDebugPanelTitle">
+      <button type="button" class="djDebugClose">×</button>
+      <h3>Сигналы</h3>
+    </div>
+    <div class="djDebugPanelContent">
+
+        <div class="djdt-loader"></div>
+        <div class="djdt-scroll"></div>
+
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div id="djDebugWindow" class="djdt-panelContent djdt-hidden"></div>
+</div>
+
+
+
+</body></html>

@@ -1,44 +1,70 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block title %}
     Оформление покупки
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="card" style="width: 18rem;">
-        <ul class="list-group list-group-flush">
-        <li class="list-group-item">Клиент</li>
-        <li class="list-group-item">{{user.}}</li>
-        <li class="list-group-item">Третий элемент</li>
-    </ul>
-    <div class="card-footer">
-        Футер карточки
-    </div>
-</div>
-
-<div class="container">
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-6">
-            <h2>Оформление покупки</h2>
-            <!-- Форма для ввода данных пользователя и выбора оплаты -->
-            <form method="post" action="">
-                {% csrf_token %}
-                <!-- Поля для ввода данных пользователя -->
-                <!-- Здесь могут быть поля для ввода имени, адреса, телефона и т.д. -->
-
-                <!-- Поле для выбора способа оплаты -->
-                <div class="form-group">
-                    <label for="payment_method">Выберите способ оплаты:</label>
-                    <select class="form-control" id="payment_method" name="payment_method">
-                        <option value="card">Кредитная карта</option>
-                        <option value="cash">Наличные</option>
-                    </select>
+<section id="contact" class="contact">
+    <div class="row mt-5 text-md-center ">
+        <div class="col container text-md-center ">
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Клиент: {{user.username}}</li>
+                    <li class="list-group-item">Способ оплаты:</li>
+                    <div class="row">
+                    <div class="col-5 offset-md-1 text-md-center"> <!-- Добавлен offset-md-1 для центрирования -->
+                        <div class="mb-3 mt-4 ml-4" style="max-width: 540px;">
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                    <img src="{% static 'img/Purchase/master_cart.png' %}" class="img-fluid rounded-start m-3" alt="...">
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <div class="form-check text-md-center">
+                                            <label class="form-check-label " for="masterCart">Master cart</label>
+                                            <input class="form-check-input payment-option" type="radio" name="paymentOption" id="masterCart" value="masterCart">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-5">
+                            <div class="mb-3 mt-4" style="max-width: 540px;">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="{% static 'img/Purchase/sbp.png' %}" class="img-fluid rounded-start m-3" alt="...">
+                                    </div>
+                                    <div class="col-md-8">
+                                    <div class="card-body">
+                                        <div class="form-check text-md-center">
+                                            <label class="form-check-label " for="sbp">СБП</label>
+                                            <input class="form-check-input payment-option" type="radio" name="paymentOption" id="sbp" value="sbp">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col text-md-center">
+                        <form action="/process_payment/" method="post" role="form" class="col-4 purchase-payment" id="paymentForm">
+                             {% csrf_token %}
+                            <div class="my-3">
+                                <div class="loading">Загрузка</div>
+                                <div class="sent-message">Оплата прошла успешно. Спасибо!</div>
+                                <div class="error-message text-md-center">Выберите способ оплаты</div>
+                            </div>
+                            <div class="text-center mb-4">
+                                <button class="blue" type="submit">Оплатить</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <!-- Кнопка для подтверждения покупки -->
-                <button type="submit" class="btn btn-primary">Подтвердить покупку</button>
-            </form>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
