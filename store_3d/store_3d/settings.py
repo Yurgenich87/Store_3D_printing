@@ -51,8 +51,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Database settings
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'store3dzepko$default',
+        'USER': 'store3dzepko',
+        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'HOST': 'store3dzepko.mysql.pythonanywhere-services.com',
+        'OPTIONS': {
+            'init_command': "SET NAMES 'utf8mb4';SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+        },
     }
 }
 
@@ -102,7 +109,7 @@ LOGOUT_URL = '/logout/'
 
 # Media settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR, 'media'
 
 
 # Root URL configuration
@@ -122,7 +129,7 @@ STATICFILES_FINDERS = [
 ]
 
 # Static files settings
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = BASE_DIR, 'static'
 STATIC_URL = '/static/'
 
 # SASS processor settings
