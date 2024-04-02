@@ -1,7 +1,6 @@
 import logging
 import os
 import random
-import time
 from datetime import timedelta, datetime
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
@@ -10,8 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.core.mail import send_mail
 from django.db.models import F
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect, Http404, HttpResponseBadRequest, \
-    HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.defaultfilters import floatformat
@@ -20,8 +18,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from rest_framework import generics
 from .models import Article, CartItem, Order, Cart, Product, User, Category
-from .forms import UserForm, LoginForm, UserProfileForm, OrderForm, ProductForm, ImageForm
-from .serializers import UserSerializer, ProductSerializer, OrderSerializer, CategoriesSerializer
+from .forms import UserForm, LoginForm, UserProfileForm, OrderForm, ProductForm
+from .serializers import UserSerializer, ProductSerializer, OrderSerializer,  CategoriesSerializer
+
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +197,7 @@ def index(request):
 
 def gallery(request):
     """View function for the gallery page."""
-    gallery_folder = os.path.join(settings.STATIC_ROOT, 'img', 'gallery')
+    gallery_folder = r'E:\PYTHON\Store_3d_printing\store_3d\static\img\gallery'
     file_names = os.listdir(gallery_folder)
     gallery_range = range(1, len(file_names) + 1)
     content = {
@@ -406,11 +405,10 @@ def filter_products(request, days):
 @csrf_exempt
 def manage_orders(request):
     """View function to manage orders."""
-    orders = Order.objects.all()
-
+    orders = Order.objects.all().order_by('-at_data')
     context = {
         'orders': orders,
-        'title': 'My Orders',
+        'title': 'Заказы',
         **COMMON_CONTENT
     }
 
@@ -432,7 +430,7 @@ def orders(request, pk=None):
         orders = Order.objects.all()
         context = {
             'orders': orders,
-            'title': 'Order List',
+            'title': 'Заказы',
             **COMMON_CONTENT
         }
         template_name = 'mainapp/manage_orders.html'
@@ -441,7 +439,7 @@ def orders(request, pk=None):
     return render(request, template_name, context)
 
 
-def randomize_order_dates(request):
+def randomize_order_dates():
     """View function to randomize order dates."""
     start_date = timezone.make_aware(datetime(2022, 1, 1, 13, 4, 4))
     end_date = timezone.make_aware(datetime(2024, 3, 18, 13, 4, 4))
@@ -562,7 +560,7 @@ def view_cart(request):
         'cart_products': cart_products,
         'total_price': total_price,
         'cart_products_length': cart_products_length,
-        'title': 'Cart',
+        'title': 'Корзина',
         **COMMON_CONTENT
     }
 
@@ -679,7 +677,6 @@ def purchase(request):
 
     if request.method == 'POST':
         try:
-            payment_method = request.POST.get('payment_method')
 
             order = Order.objects.filter(user=request.user, status='Pending').last()
             if order:

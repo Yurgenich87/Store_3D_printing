@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -47,6 +48,7 @@
                         <th>Наименование товара</th>
                         <th>Сумма</th>
                         <th>Дата</th>
+                        <th>Статус</th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -58,6 +60,17 @@
                         <td>{{ order.product.name }}</td>
                         <td>{{ order.product.price }} руб.</td>
                         <td>{{ order.at_data }}</td>
+                        <td>
+                            {% if order.status == 'P' %}
+                                <img src="{% static '/img/status/loading.png' %}" alt="Pending">
+                            {% elif order.status == 'C' %}
+                                <img src="{% static '/img/status/ok.png' %}" alt="Completed">
+                            {% elif order.status == 'X' %}
+                                <img src="{% static '/img/status/cross.png' %}" alt="Cancelled">
+                            {% else %}
+                                {{ order.status }}
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="d-flex gap-2">
                                 <i type="submit" id="edit-order" class="las la-edit la-2x btn edit-order" data-bs-toggle="modal" data-bs-target="#showOrderModal" data-order-id="{{ order.id }}"></i>

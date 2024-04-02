@@ -1,4 +1,3 @@
-# Imports
 import os
 import sys
 from pathlib import Path
@@ -18,7 +17,6 @@ COMMON_CONTENT = {
     'city': 'Novokuznetsk',
 }
 
-# Email settings
 # Email settings
 EMAIL_ADMIN = 'store3dzepko@mail.ru'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -55,24 +53,9 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-# Database settings
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'store3dzepko$default',
-#         'USER': 'store3dzepko',
-#         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-#         'HOST': 'store3dzepko.mysql.pythonanywhere-services.com',
-#         'OPTIONS': {
-#             'init_command': "SET NAMES 'utf8mb4';SET sql_mode='STRICT_TRANS_TABLES'",
-#             'charset': 'utf8mb4',
-#         },
-#     }
-# }
 
 # Debug mode
 DEBUG = True
-# DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -124,10 +107,6 @@ ROOT_URLCONF = 'store_3d.urls'
 
 # Secret key
 SECRET_KEY = 'django-insecure-dsd$%#+z%2qsy@euh)lpsr5&#h4%i+)o@kbmsyhh8z^(uvr%0j'
-# SECRET_KEY = os.getenv('SECRET_KEY')
-
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
 
 # Static files finders
 STATICFILES_FINDERS = [
