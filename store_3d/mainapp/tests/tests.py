@@ -1,16 +1,13 @@
-import io
+import logging
 import json
-import os
 
 from django.core import mail
-from django.db.models import Sum
 from django.test import TestCase, Client, RequestFactory
 from django.urls import reverse
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import get_user_model
 from ..forms import UserForm
-from ..models import User, Order, Cart, CartItem, Product, Article, Category
-import logging
+from ..models import User, Order, Cart, CartItem, Product, Category
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +18,8 @@ class TestLoginView(TestCase):
         self.client = Client()
         self.login_url = reverse('login')
         self.index_url = reverse('index')
-        self.user = User.objects.create(email='test@test.com', username='testuser', password=make_password('testpassword'))
+        self.user = User.objects.create(email='test@test.com', username='testuser',
+                                        password=make_password('testpassword'))
 
     def test_login_view_get(self):
         """
@@ -96,7 +94,6 @@ class TestRegisterView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'This field is required.', html=True)
         self.assertFalse(User.objects.filter(username='testuser').exists())
-
 
     class Meta:
         verbose_name = "Test Register View"

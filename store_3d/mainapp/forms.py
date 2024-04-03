@@ -18,20 +18,30 @@ class UserProfileForm(forms.ModelForm):
         fields = ['username', 'email', 'first_name', 'last_name', 'patronymic_name', 'phone', 'street', 'city',
                   'region', 'postal_code']
 
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        password_confirmation = cleaned_data.get('password_confirmation')
+
+        if password and password_confirmation and password != password_confirmation:
+            raise forms.ValidationError("Пароль и подтверждение пароля не совпадают.")
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Установка начальных значений для каждого поля на основе данных пользователя
         if self.instance:
-            self.fields['username'].initial = self.instance.username
-            self.fields['email'].initial = self.instance.email
-            self.fields['first_name'].initial = self.instance.first_name
-            self.fields['last_name'].initial = self.instance.last_name
-            self.fields['patronymic_name'].initial = self.instance.patronymic_name
-            self.fields['phone'].initial = self.instance.phone
-            self.fields['street'].initial = self.instance.street
-            self.fields['city'].initial = self.instance.city
-            self.fields['region'].initial = self.instance.region
-            self.fields['postal_code'].initial = self.instance.postal_code
+            initial_data = {
+                'username': self.instance.username,
+                'email': self.instance.email,
+                'first_name': self.instance.first_name,
+                'last_name': self.instance.last_name,
+                'patronymic_name': self.instance.patronymic_name,
+                'phone': self.instance.phone,
+                'street': self.instance.street,
+                'city': self.instance.city,
+                'region': self.instance.region,
+                'postal_code': self.instance.postal_code
+            }
+            self.initial = initial_data
 
     def clean(self):
         """Clean method to validate password confirmation"""
@@ -68,13 +78,13 @@ class ProductForm(forms.ModelForm):
     """Form for creating new products"""
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'quantity', 'category']
+        fields = ['name', 'description', 'price', 'quantity', 'category_id']
         labels = {
             'name': '',
             'price': '',
             'quantity': '',
             'description': '',
-            'category': ''
+            'category_id': ''
 
         }
         widgets = {
@@ -82,7 +92,7 @@ class ProductForm(forms.ModelForm):
             'price': forms.NumberInput(attrs={'placeholder': 'Цена'}),
             'quantity': forms.NumberInput(attrs={'placeholder': 'Кол-во'}),
             'description': forms.TextInput(attrs={'placeholder': 'Описание'}),
-            'category': forms.TextInput(attrs={'placeholder': 'Категория'}),
+            'category_id': forms.TextInput(attrs={'placeholder': 'Категория'}),
         }
 
 

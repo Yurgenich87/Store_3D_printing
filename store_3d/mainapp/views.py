@@ -7,13 +7,17 @@ from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.humanize.templatetags.humanize import intcomma
+from django.core.cache import cache
 from django.core.mail import send_mail
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db import transaction
 from django.db.models import F
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.defaultfilters import floatformat
 from django.utils import timezone
+from django.views.decorators.cache import cache_page, never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from rest_framework import generics
@@ -30,26 +34,50 @@ COMMON_CONTENT = settings.COMMON_CONTENT
 # __________________________________________________________API_________________________________________________________
 class UserListAPIView(generics.ListAPIView):
     """API view to list users."""
-    queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_queryset(self):
+        queryset = cache.get('user_list_queryset')
+        if not queryset:
+            queryset = User.objects.all()
+            cache.set('user_list_queryset', queryset, timeout=3600)
+        return queryset
 
 
 class ProductListAPIView(generics.ListAPIView):
     """API view to list products."""
-    queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        queryset = cache.get('product_list_queryset')
+        if not queryset:
+            queryset = Product.objects.all()
+            cache.set('product_list_queryset', queryset, timeout=3600)
+        return queryset
 
 
 class OrderListAPIView(generics.ListAPIView):
     """API view to list orders."""
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        queryset = cache.get('order_list_queryset')
+        if not queryset:
+            queryset = Order.objects.all()
+            cache.set('order_list_queryset', queryset, timeout=3600)
+        return queryset
 
 
 class CategoriesListAPIView(generics.ListAPIView):
     """API view to list categories."""
-    queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
+
+    def get_queryset(self):
+        queryset = cache.get('category_list_queryset')
+        if not queryset:
+            queryset = Category.objects.all()
+            cache.set('category_list_queryset', queryset, timeout=3600)
+        return queryset
 
 
 # ________________________________________________________General_____________________________________________________
@@ -111,20 +139,32 @@ def logout_view(request):
     return redirect('index')
 
 
+@cache_page(60 * 15)
 @login_required
 def profile(request):
     """View function for user profile edit menu."""
     user = request.user
+
+    cache_key = f'user_{user.id}_profile'
+    cached_data = cache.get(cache_key)
+
+    if cached_data:
+        return cached_data
+
     content = {
         'user': user,
         'title': 'Профиль',
         **COMMON_CONTENT
     }
 
+    # Кэшируем данные
+    cache.set(cache_key, content, timeout=3600)  # Время жизни кэша - 1 час
+
     logger.debug(f"User profile page for {user} loaded successfully.")
     return render(request, 'mainapp/profile.html', content)
 
 
+@cache_page(60 * 15)
 @login_required
 def edit_profile(request):
     """View function for editing user profile."""
@@ -174,6 +214,7 @@ def delete_profile(request, user=None):
 
 
 # ________________________________________________________Menu_____________________________________________________
+@cache_page(60 * 15)
 def index(request):
     """View function for the main page."""
     if request.method == 'POST':
@@ -195,6 +236,7 @@ def index(request):
     return render(request, 'mainapp/index.html', content)
 
 
+@cache_page(60 * 15)
 def gallery(request):
     """View function for the gallery page."""
     gallery_folder = r'E:\PYTHON\Store_3d_printing\store_3d\static\img\gallery'
@@ -209,6 +251,7 @@ def gallery(request):
     return render(request, 'mainapp/gallery.html', content)
 
 
+@cache_page(60 * 15)
 def articles(request):
     """View function for displaying articles."""
     articles = Article.objects.all()
@@ -219,16 +262,6 @@ def articles(request):
     }
     logger.debug(f"Page '{content['title']}' loaded successfully.")
     return render(request, 'mainapp/articles.html', content)
-
-
-def create_article(request):
-    """View function for creating an article."""
-    context = {
-        'title': 'Добавление статьи',
-        **COMMON_CONTENT
-    }
-    logger.debug(f"Page '{context['title']}' loaded successfully.")
-    return render(request, 'mainapp/create_article.html', context)
 
 
 def contact(request):
@@ -265,6 +298,7 @@ def contact_form_submit(request):
         return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
 
 
+@cache_page(60 * 15)
 def about(request):
     """View function for the about page."""
     logger.debug('About page accessed')
@@ -277,12 +311,20 @@ def about(request):
 
 
 @login_required
+@never_cache
 def store(request):
     """View function for the store page."""
     user = request.user
-    products = Product.objects.all()
+    tab = request.GET.get('tab')  # Получаем значение параметра tab из запроса
+
+    if tab == 'models_stl':
+        products = Product.objects.filter(category_id__name='STL модели')
+    else:
+        products = Product.objects.all()
+
     cart_products = CartItem.objects.filter(cart__user=user)
     total_price = sum(item.product.price * item.quantity for item in cart_products)
+
     context = {
         'total_price': total_price,
         'products': products,
@@ -297,13 +339,24 @@ def store(request):
 
 # ________________________________________________________Product_____________________________________________________
 @login_required
+@user_passes_test(lambda u: u.is_staff)
+@cache_page(60 * 15)
 def manage_products(request):
     """View function for managing products."""
-    products = Product.objects.all()
+    if not request.user.is_staff:
+        return HttpResponseForbidden("Доступ ограничен.")
+
+    tab = request.GET.get('tab')
+
+    if tab == 'stl_models':
+        products = Product.objects.filter(category__name='STL модели')
+    else:
+        products = Product.objects.all()
 
     content = {
         'title': 'Мои товары',
         'products': products,
+        'tab': tab,  # передаем значение вкладки в контекст
         **COMMON_CONTENT
     }
 
@@ -327,7 +380,7 @@ def create_product(request):
 
             if 'image' in request.FILES:
                 image = request.FILES['image']
-                product.image.save(image.name, image)
+                product.image.save(image.name, image, save=False)
                 product.save()
 
             return JsonResponse({'success': 'Product created successfully'})
@@ -378,6 +431,7 @@ def delete_product(request, product_id):
     return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
+@cache_page(60 * 15)
 def filter_products(request, days):
     """View function to filter products based on a specified number of days."""
     try:
@@ -402,7 +456,7 @@ def filter_products(request, days):
 
 # ________________________________________________________Orders_____________________________________________________
 @login_required
-@csrf_exempt
+@user_passes_test(lambda u: u.is_staff)
 def manage_orders(request):
     """View function to manage orders."""
     orders = Order.objects.all().order_by('-at_data')
@@ -677,6 +731,7 @@ def purchase(request):
 
     if request.method == 'POST':
         try:
+            payment_method = request.POST.get('payment_method')
 
             order = Order.objects.filter(user=request.user, status='Pending').last()
             if order:
@@ -705,14 +760,19 @@ def purchase(request):
 def process_payment(request):
     user = request.user
     logger.info(f'{user =}')
-    cart = Cart.objects.get(user=user)
 
-    cart_items = cart.cartitem_set.all()
-    cart_items.delete()
-    logger.debug(f'Корзина успешно очищена, после покупки')
-
+    # Обновляем статус заказа до "COMPLETED"
     Order.objects.filter(user=user).update(status=Order.COMPLETED)
     logger.debug(f'Статус ордера изменен на: COMPLETED')
+
+    # Затем удаляем элементы из корзины
+    try:
+        cart = Cart.objects.get(user=user)
+        cart_items = cart.cartitem_set.all()
+        cart_items.delete()
+        logger.debug(f'Корзина успешно очищена, после покупки')
+    except Cart.DoesNotExist:
+        logger.warning(f'Пользователь {user} не имеет корзины')
 
     response_data = {'redirect_url': '/store/'}
     return JsonResponse(response_data)

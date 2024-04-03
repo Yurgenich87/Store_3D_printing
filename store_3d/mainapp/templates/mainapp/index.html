@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %} {{ main }} {% endblock %}
+{% block title %} {{ title }} {% endblock %}
 
 {% block content %}
 <div class="section-title">
@@ -13,12 +13,23 @@
     </div>
     <hr class="my-4">
     <div class="row">
-        <div class="col">
+        <div class="col-7">
             <p>Наш сайт предлагает ассортимент 3D принтеров, расходных материалов и аксессуаров высокого качества. В нашей галерее вы сможете ознакомиться с уникальными проектами, созданными нашими клиентами, а также найти вдохновение для своих собственных идей.</p>
             <p>Мы также предоставляем различные сервисы, включая услуги моделирования, печати на заказ и консультации по выбору оборудования и материалов.</p>
+            <img src="{% static 'img/rabbit.png' %}" style="width: 50%;" class="img-fluid animated">
+
         </div>
-        <div class="col hero">
+        <div class="col-5 hero">
           <img src="{% static 'img/img.png' %}" class="img-fluid animated" alt="Анимированное изображение">
+        </div>
+        <div class="col-4">
+            <img src="{% static 'img/K1C.png' %}" class="img-fluid animated">
+        </div>
+        <div class="col-4">
+            <img src="{% static 'img/Bambu_lab.png' %}" class="img-fluid animated">
+        </div>
+        <div class="col-4">
+          <img src="{% static 'img/Ender_3_S1.png' %}" class="img-fluid animated">
         </div>
     </div>
 </div>

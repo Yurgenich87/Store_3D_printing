@@ -74,6 +74,7 @@
                                         <i class="las la-minus la-2x remove-from-cart-btn" data-product-id="{{ product.id }}"></i>
                                         <span class="mx-2">{{ cart_product.quantity }} шт.</span>
                                     {% endif %}
+
                                 {% endfor %}
                                 <i class="las la-plus la-2x add-to-cart-btn" data-product-id="{{ product.id }}"></i>
                             </div>
@@ -84,4 +85,5 @@
         </div>
     </div>
 </div>
+
 {% endblock %}

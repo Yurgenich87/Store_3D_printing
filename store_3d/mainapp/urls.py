@@ -8,7 +8,7 @@ from .views import (
     delete_profile, manage_products, update_order, create_order, manage_orders,
     update_product, delete_product, articles, create_product, filter_products,
     add_to_cart, remove_from_cart, view_cart, store, filter_products_in_cart,
-    randomize_order_dates, filter_order, create_article, contact_form_submit,
+    randomize_order_dates, filter_order, contact_form_submit,
     UserListAPIView, ProductListAPIView, OrderListAPIView, delete_order, purchase,
     profile, CategoriesListAPIView, process_payment
 )
@@ -34,7 +34,6 @@ urlpatterns = [
     path('contact_form_submit/', contact_form_submit, name='contact_form_submit'),
     path('gallery/', gallery, name='gallery'),
     path('articles/', articles, name='articles'),
-    path('create_article/', create_article, name='create_article'),
 
     # User Profile
     path('profile/', profile, name='profile'),

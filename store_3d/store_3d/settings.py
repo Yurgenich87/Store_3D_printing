@@ -7,10 +7,9 @@ from django.conf import settings
 # Common settings
 COMMON_CONTENT = {
     'name_store': '3D Master',
-    'main': 'Main',
-    'about': 'About',
-    'services': 'Services',
-    'contact': 'Contact',
+    'main': 'Главная',
+    'about': 'О нас',
+    'contact': 'Контакты',
     'phone': '+7 999 678 43 20',
     'email_store': 'store3dzepko@yandex.ru',
     'address': '40 Kirova St',
@@ -71,6 +70,13 @@ INSTALLED_APPS = [
     'bootstrap5',
     'debug_toolbar',
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 
 # Middleware settings
 MIDDLEWARE = [

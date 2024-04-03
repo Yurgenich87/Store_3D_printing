@@ -1,7 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, Group
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.contrib.auth.models import BaseUserManager
 
 
@@ -88,8 +86,9 @@ class Product(models.Model):
     description = models.TextField()
     price = models.IntegerField()
     quantity = models.IntegerField(default=0)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, default=1)
+    category_id = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, default=1)
     image = models.ImageField(upload_to='product_images/')
+    stl_file = models.FileField(upload_to='stl_files/')
     at_data = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -119,8 +118,8 @@ class Order(models.Model):
         (CANCELLED, 'Cancelled'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=PENDING)
     at_data = models.DateTimeField(auto_now_add=True)
 
@@ -132,7 +131,6 @@ class Cart(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
 
-
 class CartItem(models.Model):
     """Model representing an item in a shopping cart."""
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
@@ -141,8 +139,6 @@ class CartItem(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
     description = models.CharField(max_length=100)
-
-
 
     def save(self, *args, **kwargs):
         """Override the save method to update name, description, and price based on the linked product."""
@@ -160,4 +156,3 @@ class Image(models.Model):
     def __str__(self):
         """String representation of the image object."""
         return self.title
-

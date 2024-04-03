@@ -9,6 +9,14 @@
 {% csrf_token %}
 <div class="section-title">
     <h2>{{ title }}</h2>
+    <div class="row ">
+        <div class="col-6 text-md-center">
+            <a href="{% url 'store' %}?tab=store">Товары</a>
+        </div>
+        <div class="col-6 text-md-center">
+            <a href="{% url 'store' %}?tab=models_stl">Модели STL</a>
+        </div>
+    </div>
 </div>
 
 <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -35,7 +43,7 @@
                             {% endif %}
                         {% endfor %}
                         <i class="las la-plus la-2x add-to-cart-btn" data-product-id="{{ product.id }}"></i>
-                        <i class="las la-cart-arrow-down la-3x"></i>
+                        <a href="{% url 'cart' %}" class="las la-cart-arrow-down la-3x"></a>
                     </div>
                 </div>
             </div>
@@ -43,3 +51,23 @@
     {% endfor %}
 </div>
 {% endblock %}
+
+{#<div class="pagination text-md-end">#}
+{#    <span class="step-links">#}
+{#        {% if products.has_previous %}#}
+{#            <a href="?page=1">&laquo; первая</a>#}
+{#            <a href="?page={{ products.previous_page_number }}">предыдущая</a>#}
+{#        {% endif %}#}
+{##}
+{#        <span class="current">#}
+{#            Страница {{ products.number }} из {{ products.paginator.num_pages }}.#}
+{#        </span>#}
+{##}
+{#        {% if products.has_next %}#}
+{#            <a href="?page={{ products.next_page_number }}">следующая</a>#}
+{#            <a href="?page={{ products.paginator.num_pages }}">последняя &raquo;</a>#}
+{#        {% endif %}#}
+{#    </span>#}
+{#</div>#}
+{##}
+{#{% endblock %}#}

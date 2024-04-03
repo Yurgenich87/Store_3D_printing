@@ -1,4 +1,3 @@
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
 let currentProductId = null;
 let currentOrderId = null;
 var datepicker = new Datepicker('#datepicker');
@@ -38,7 +37,12 @@ function createProduct(productData) {
     formData.append('price', productData.price);
     formData.append('quantity', productData.quantity);
     formData.append('description', productData.description);
-    formData.append('category', productData.category);
+
+    if (productData.category_id) {
+        formData.append('category_id', productData.category_id);
+    } else {
+        formData.append('category_id', 1);
+    }
 
 
     if (productData.image) {
@@ -63,7 +67,7 @@ function createProduct(productData) {
         })
         .then(data => {
                 console.log('Продукт успешно создан:', data);
-                $('#showModal').modal('hide'); // Скрыть модальное окно
+                $('#showModal').modal('hide');
 
                 showNotification('Продукт успешно создан.');
             })
@@ -81,7 +85,7 @@ function updateData(productId, updatedData) {
     formData.append('price', updatedData.price);
     formData.append('quantity', updatedData.quantity);
     formData.append('description', updatedData.description);
-    formData.append('category', updatedData.category);
+    formData.append('category_id', updatedData.category_id);
 
 
     if (updatedData.image) {
@@ -114,22 +118,6 @@ function updateData(productId, updatedData) {
 }
 
 
-function filterProducts(days) {
-    fetch(`/filter_products/${days}/`)
-        .then(response => {
-            if (response.ok) {
-                return response.text();
-
-            }
-            throw new Error('Ошибка при получении данных');
-        })
-        .then(html => {
-            document.querySelector('body').innerHTML = html;
-            console.info('days:', days);
-        })
-        .catch(error => console.error('Ошибка при фильтрации товаров:', error));
-}
-
 function deleteProduct(productId) {
     const csrftoken = getCookie('csrftoken');
 
@@ -152,6 +140,22 @@ function deleteProduct(productId) {
         .catch(error => {
             console.error('Ошибка при удалении продукта:', error);
         });
+}
+
+function filterProducts(days) {
+    fetch(`/filter_products/${days}/`)
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+
+            }
+            throw new Error('Ошибка при получении данных');
+        })
+        .then(html => {
+            document.querySelector('body').innerHTML = html;
+            console.info('days:', days);
+        })
+        .catch(error => console.error('Ошибка при фильтрации товаров:', error));
 }
 
 function updateOrder(orderId, updatedOrderData) {
@@ -296,7 +300,8 @@ function showNotification(message) {
 
     return new Promise(resolve => {
         setTimeout(() => {
-            resolve(location.reload());
+            location.reload();
+            resolve(null);
         }, 3000);
     });
 }
@@ -342,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         option.text = category.name;
                         categorySelect.appendChild(option);
                     });
-                    let productCategory = data.find(item => item.id === parseInt(product.category));
+                    let productCategory = data.find(item => item.id === parseInt(product.category_id));
                     if (productCategory) {
                         categorySelect.value = productCategory.id;
                     }
@@ -356,7 +361,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById("price").value = product.price;
                     document.getElementById("quantity").value = product.quantity;
                     document.getElementById("description").value = product.description;
-                    document.getElementById("edit-category").value = product.category;
+                    document.getElementById("edit-category").value = product.category_id;
 
                 })
                 .catch(error => console.error('Error fetching product details:', error));
@@ -366,6 +371,23 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("showModal").querySelector(".modal-footer").style.display = "block";
             document.getElementById("edit-btn").style.display = "none";
             document.getElementById("add-btn").style.display = "block";
+
+            fetch('/api/categories/')
+                .then(response => response.json())
+                .then(categories => {
+                    let categorySelect = document.getElementById("edit-category");
+                    categorySelect.innerHTML = '';
+                    categories.forEach(category => {
+                        let option = document.createElement('option');
+                        option.value = category.id;
+                        option.text = category.name;
+                        categorySelect.appendChild(option);
+                    });
+                    let productCategory = data.find(item => item.id === parseInt(product.category_id));
+                    if (productCategory) {
+                        categorySelect.value = productCategory.id;
+                    }
+                })
         }
     }));
 
@@ -378,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let price = document.getElementById("price").value;
         let quantity = document.getElementById("quantity").value;
         let description = document.getElementById("description").value;
-        let category = document.getElementById("category").value;
+        let category_id = document.getElementById("edit-category").value;
 
         let imageInput = document.getElementById("image");
         let image = null;
@@ -391,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function() {
             price: price,
             quantity: quantity,
             description: description,
-            category: category,
+            category_id: category_id,
             image: image
         };
 
@@ -408,7 +430,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let price = document.getElementById("price").value;
         let quantity = document.getElementById("quantity").value;
         let description = document.getElementById("description").value;
-        let category = document.getElementById("edit-category").value;
+        let category_id = document.getElementById("edit-category").value;
 
         let imageInput = document.getElementById("image");
         let image = null;
@@ -421,7 +443,7 @@ document.addEventListener("DOMContentLoaded", function() {
             price: price,
             quantity: quantity,
             description: description,
-            category: category,
+            category_id: category_id,
 
         };
 
@@ -452,7 +474,6 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("price").value = "";
         document.getElementById("quantity").value = "";
         document.getElementById("description").value = "";
-        document.getElementById("category").value = "";
 
         currentProductId = null;
     });
@@ -492,9 +513,7 @@ document.querySelectorAll('.add-to-cart-btn').forEach(button => {
 document.querySelectorAll('.remove-from-cart-btn').forEach(button => {
     button.addEventListener('click', function() {
         const productId = this.getAttribute('data-product-id');
-        const csrftoken = getCookie('csrftoken');
         deleteProductFromCart(productId);
-
 
     });
 });
@@ -706,24 +725,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return response.json();
         })
-        .then(data => {
-            // Действия после получения ответа от сервера (если нужно)
-        })
         .catch(error => {
             console.error('Error:', error);
         });
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-

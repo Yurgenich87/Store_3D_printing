@@ -10,12 +10,13 @@
 
 <div class="section-title">
     <h2>{{ title }}</h2>
+
 </div>
 
 <div class="col">
 <div class="row justify-content-around align-items-center">
         <div class="col-4 text-md-center">
-            <button type="submit"  class="blue add-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
+            <button type="submit"  class="blue create-btn" data-bs-toggle="modal" id="create-btn" data-bs-target="#showModal">
                 <i></i>Добавить товар</button>
         </div>
         <div class="col-4 text-md-center">
@@ -35,7 +36,7 @@
         <table class="table align-middle table-nowrap table-striped" id="customerTable">
             <thead class="table-light">
             <tr>
-                <th class="sort" data-sort="id">ID</th>
+                <th class="sort" data-sort="id" style="width: 15%;">ID</th>
                 <th class="sort" data-sort="name">Наименование</th>
                 <th class="sort" data-sort="price">Цена</th>
                 <th class="sort" data-sort="quantity">Кол-во</th>
@@ -48,7 +49,7 @@
             {% for product in products %}
             <tbody class="list form-check-all">
             <tr>
-                <td class="table" data-sort="id">{{ product.id }}</td>
+                <td class="table" data-sort="id" style="width: 15%;">{{ product.id }}</td>
                 <td class="table">
                     {% if product.image %}
                         <img src="{{ product.image.url }}" style="width: 50px; height: auto;">
@@ -87,7 +88,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-info p-3 d-flex justify-content-between">
-                <h5 class="modal-title" id="exampleModalLabel">111111</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Errors</h5>
                 <button type="button" style="position: absolute; top: 10px; right: 0;" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
             </div>
             <form>
