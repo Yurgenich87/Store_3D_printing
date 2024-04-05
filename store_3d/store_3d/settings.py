@@ -17,10 +17,10 @@ COMMON_CONTENT = {
 }
 
 # Email settings
-EMAIL_ADMIN = 'store3dzepko@mail.ru'
+EMAIL_ADMIN = 'yurakarbushev@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.mail.ru'
-EMAIL_HOST_PASSWORD = 'CeEvdV7hkSXZamK8VDET'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_PASSWORD = 'afvd cuei sabl onui'
 EMAIL_HOST_USER = EMAIL_ADMIN
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
